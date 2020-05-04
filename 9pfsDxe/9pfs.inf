@@ -30,6 +30,7 @@
 #
 
 [Sources]
+  ComponentName.c
   9pfs.h
   9pfs.c
 
