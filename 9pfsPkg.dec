@@ -1,0 +1,16 @@
+## @file
+#  9P Package
+#
+#  9P Driver
+#  Copyright (c) 2007 - 2014, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = 9pfsPkg
+  PACKAGE_UNI_FILE               = 9pfsPkg.uni
+  PACKAGE_GUID                   = ec728e4d-fd2d-47bd-ba04-4dd713b3b784
+  PACKAGE_VERSION                = 0.1

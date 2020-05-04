@@ -1,0 +1,65 @@
+## @file
+#  Component Description File for 9P module.
+#
+#  Copyright (c) 2007 - 2018, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = 9pfs
+  MODULE_UNI_FILE                = 9pfs.uni
+  FILE_GUID                      = eb950d37-44b4-4ab2-8e1b-0cf08f2b89c8
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 1.0
+
+  ENTRY_POINT                    = P9EntryPoint
+  UNLOAD_IMAGE                   = P9Unload
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = X64
+#
+#  DRIVER_BINDING                =  g9pfsDriverBinding
+#  COMPONENT_NAME                =  g9pfsComponentName
+#  COMPONENT_NAME2               =  g9pfsComponentName2
+#
+
+[Sources]
+  9pfs.h
+  9pfs.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiRuntimeServicesTableLib
+  UefiBootServicesTableLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  BaseLib
+  UefiLib
+  UefiDriverEntryPoint
+  DebugLib
+  PcdLib
+
+[Guids]
+  gEfiFileInfoGuid                      ## SOMETIMES_CONSUMES   ## UNDEFINED
+  gEfiFileSystemInfoGuid                ## SOMETIMES_CONSUMES   ## UNDEFINED
+  gEfiFileSystemVolumeLabelInfoIdGuid   ## SOMETIMES_CONSUMES   ## UNDEFINED
+
+[Protocols]
+  gEfiDiskIoProtocolGuid                ## TO_START
+  gEfiDiskIo2ProtocolGuid               ## TO_START
+  gEfiBlockIoProtocolGuid               ## TO_START
+  gEfiSimpleFileSystemProtocolGuid      ## BY_START
+  gEfiUnicodeCollationProtocolGuid      ## TO_START
+  gEfiUnicodeCollation2ProtocolGuid     ## TO_START
+
+[Pcd]
+  gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultLang           ## SOMETIMES_CONSUMES
+  gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultPlatformLang   ## SOMETIMES_CONSUMES
