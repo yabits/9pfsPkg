@@ -31,6 +31,7 @@
 
 [Sources]
   ComponentName.c
+  OpenVolume.c
   9pfs.h
   9pfs.c
 
@@ -54,10 +55,9 @@
   gEfiFileSystemVolumeLabelInfoIdGuid   ## SOMETIMES_CONSUMES   ## UNDEFINED
 
 [Protocols]
-  gEfiDiskIoProtocolGuid                ## TO_START
-  gEfiDiskIo2ProtocolGuid               ## TO_START
-  gEfiBlockIoProtocolGuid               ## TO_START
   gEfiSimpleFileSystemProtocolGuid      ## BY_START
+  gEfiTcp4ServiceBindingProtocolGuid    ## TO_START
+  gEfiTcp4ProtocolGuid                  ## TO_START
   gEfiUnicodeCollationProtocolGuid      ## TO_START
   gEfiUnicodeCollation2ProtocolGuid     ## TO_START
 

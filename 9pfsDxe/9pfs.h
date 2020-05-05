@@ -11,6 +11,9 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include <Uefi.h>
 
+#include <Protocol/ServiceBinding.h>
+#include <Protocol/Tcp4.h>
+
 #include <Library/PcdLib.h>
 #include <Library/DebugLib.h>
 #include <Library/UefiLib.h>
@@ -20,6 +23,25 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/UefiDriverEntryPoint.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
+
+/**
+
+  Implements Simple File System Protocol interface function OpenVolume().
+
+  @param  This                  - Calling context.
+  @param  File                  - the Root Directory of the volume.
+
+  @retval EFI_OUT_OF_RESOURCES  - Can not allocate the memory.
+  @retval EFI_VOLUME_CORRUPTED  - The P9 type is error.
+  @retval EFI_SUCCESS           - Open the volume successfully.
+
+**/
+EFI_STATUS
+EFIAPI
+P9OpenVolume (
+  IN  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *This,
+  OUT EFI_FILE_PROTOCOL                **File
+  );
 
 //
 // Global Variables

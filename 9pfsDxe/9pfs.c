@@ -199,7 +199,18 @@ P9DriverBindingSupported (
   IN EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath
   )
 {
-  return EFI_SUCCESS;
+  EFI_STATUS                    Status;
+
+  Status = gBS->OpenProtocol (
+                  ControllerHandle,
+                  &gEfiTcp4ServiceBindingProtocolGuid,
+                  NULL,
+                  This->DriverBindingHandle,
+                  ControllerHandle,
+                  EFI_OPEN_PROTOCOL_TEST_PROTOCOL
+                  );
+
+  return Status;
 }
 
 /**
@@ -226,7 +237,74 @@ P9DriverBindingStart (
   IN EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath
   )
 {
-  return EFI_SUCCESS;
+  EFI_STATUS                      Status;
+  EFI_SERVICE_BINDING_PROTOCOL    *ServiceBinding;
+  EFI_HANDLE                      ChildHandle;
+  EFI_TCP4_PROTOCOL               *Tcp4;
+  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *VolumeInterface;
+
+  //
+  // Open ServiceBinding
+  //
+  Status = gBS->OpenProtocol (
+                  ControllerHandle,
+                  &gEfiTcp4ServiceBindingProtocolGuid,
+                  (VOID **) &ServiceBinding,
+                  This->DriverBindingHandle,
+                  ControllerHandle,
+                  EFI_OPEN_PROTOCOL_GET_PROTOCOL
+                  );
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  //
+  // Creaate ChildHandle
+  //
+  Status = ServiceBinding->CreateChild (
+                  ServiceBinding,
+                  &ChildHandle
+                  );
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  //
+  // Open Tcp4
+  //
+  Status = gBS->OpenProtocol (
+                  ChildHandle,
+                  &gEfiTcp4ProtocolGuid,
+                  (VOID **) &Tcp4,
+                  This->DriverBindingHandle,
+                  ControllerHandle,
+                  EFI_OPEN_PROTOCOL_BY_DRIVER
+                  );
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  VolumeInterface = AllocateZeroPool (sizeof (EFI_SIMPLE_FILE_SYSTEM_PROTOCOL));
+  if (VolumeInterface == NULL) {
+    Status = EFI_OUT_OF_RESOURCES;
+    goto Exit;
+  }
+
+  VolumeInterface->Revision   = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION;
+  VolumeInterface->OpenVolume = P9OpenVolume;
+
+  Status = gBS->InstallMultipleProtocolInterfaces (
+                  &ControllerHandle,
+                  &gEfiSimpleFileSystemProtocolGuid,
+                  VolumeInterface,
+                  NULL
+                  );
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+Exit:
+  return Status;
 }
 
  /**
