@@ -32,6 +32,12 @@
 [Sources]
   ComponentName.c
   OpenVolume.c
+  Data.c
+  Open.c
+  Delete.c
+  ReadWrite.c
+  Info.c
+  Flush.c
   9pfs.h
   9pfs.c
 
