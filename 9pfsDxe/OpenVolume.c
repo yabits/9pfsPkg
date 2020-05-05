@@ -32,5 +32,7 @@ P9OpenVolume (
     return EFI_OUT_OF_RESOURCES;
   }
 
+  CopyMem (*File, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
+
   return EFI_SUCCESS;
 }
