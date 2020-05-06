@@ -42,6 +42,12 @@ P9OpenVolume (
     goto Exit;
   }
 
+  Volume->MSize = 8192;
+  Status = P9Version (Volume, &Volume->MSize, "9P2000.L");
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
   *File = AllocateZeroPool (sizeof (EFI_FILE_PROTOCOL));
   if (*File == NULL) {
     Status = EFI_OUT_OF_RESOURCES;

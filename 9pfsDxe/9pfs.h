@@ -38,6 +38,7 @@ struct _P9_VOLUME {
   EFI_HANDLE                      Handle;
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL VolumeInterface;
   EFI_TCP4_PROTOCOL               *Tcp4;
+  UINT32                          MSize;
 };
 
 //
@@ -362,6 +363,22 @@ P9OpenVolume (
   );
 
 EFI_STATUS
+TransmitTcp4 (
+  IN EFI_TCP4_PROTOCOL  *Tcp4,
+  IN EFI_TCP4_IO_TOKEN  *TransmitToken,
+  IN VOID               *Data,
+  IN UINTN              DataSize
+  );
+
+EFI_STATUS
+ReceiveTcp4 (
+  IN EFI_TCP4_PROTOCOL  *Tcp4,
+  IN EFI_TCP4_IO_TOKEN  *ReceiveToken,
+  OUT VOID              *Data,
+  OUT UINTN             DataSize
+  );
+
+EFI_STATUS
 ConfigureP9 (
   IN OUT P9_VOLUME          *Volume,
   IN CHAR16                 *StationAddrStr,
@@ -372,6 +389,13 @@ ConfigureP9 (
 EFI_STATUS
 ConnectP9 (
   IN P9_VOLUME                  *Volume
+  );
+
+EFI_STATUS
+P9Version (
+  IN P9_VOLUME          *Volume,
+  IN OUT UINT32         *MSize,
+  IN CHAR8              *VersionString
   );
 
 //
