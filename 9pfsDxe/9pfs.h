@@ -398,6 +398,15 @@ P9Version (
   IN CHAR8              *VersionString
   );
 
+EFI_STATUS
+P9Attach (
+  IN P9_VOLUME          *Volume,
+  IN UINT16             Tag,
+  IN CHAR8              *UNameStr,
+  IN CHAR8              *ANameStr,
+  OUT UINT8             *Qid
+  );
+
 //
 // Global Variables
 //

@@ -29,6 +29,7 @@ P9OpenVolume (
 {
   EFI_STATUS                Status;
   P9_VOLUME                 *Volume;
+  UINT8                     RootQid[13];
 
   Volume = VOLUME_FROM_VOL_INTERFACE (This);
 
@@ -44,6 +45,11 @@ P9OpenVolume (
 
   Volume->MSize = 8192;
   Status = P9Version (Volume, &Volume->MSize, "9P2000.L");
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  Status = P9Attach (Volume, 1, "root", "/tmp/9", RootQid);
   if (EFI_ERROR (Status)) {
     goto Exit;
   }
