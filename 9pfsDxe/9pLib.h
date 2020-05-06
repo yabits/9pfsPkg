@@ -32,6 +32,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define Rversion    101
 #define Tattach     104
 #define Rattach     105
+#define Tlopen      12
+#define Rlopen      13
 
 #pragma pack(1)
 struct P9Header {
@@ -68,6 +70,18 @@ struct P9TAttach {
 struct P9RAttach {
   struct P9Header Header;
   UINT8           Qid[13];
+};
+
+struct P9TLOpen {
+  struct P9Header Header;
+  UINT32          Fid;
+  UINT32          Flags;
+};
+
+struct P9RLOpen {
+  struct P9Header Header;
+  UINT8           Qid[13];
+  UINT32          IoUnit;
 };
 #pragma pack()
 
@@ -130,6 +144,16 @@ P9Attach (
   IN CHAR8              *UNameStr,
   IN CHAR8              *ANameStr,
   OUT UINT8             *Qid
+  );
+
+EFI_STATUS
+P9LOpen (
+  IN P9_VOLUME          *Volume,
+  IN UINT16             Tag,
+  IN UINT32             Fid,
+  IN UINT32             Flags,
+  OUT UINT8             *Qid,
+  OUT UINT32            *IoUnit
   );
 
 #endif

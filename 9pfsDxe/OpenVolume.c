@@ -30,7 +30,12 @@ P9OpenVolume (
 {
   EFI_STATUS                Status;
   P9_VOLUME                 *Volume;
+  UINT16                    Tag;
+  UINT32                    RootFid;
   UINT8                     RootQid[13];
+  UINT32                    RootFlags;
+  UINT8                     Qid[13];
+  UINT32                    RootIoUnit;
 
   Volume = VOLUME_FROM_VOL_INTERFACE (This);
 
@@ -50,7 +55,15 @@ P9OpenVolume (
     goto Exit;
   }
 
-  Status = P9Attach (Volume, 1, "root", "/tmp/9", RootQid);
+  Tag = 1;
+  RootFid = 1;
+  Status = P9Attach (Volume, Tag, RootFid, "root", "/tmp/9", RootQid);
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  RootFlags = 0;
+  Status = P9LOpen (Volume, Tag, RootFid, RootFlags, Qid, &RootIoUnit);
   if (EFI_ERROR (Status)) {
     goto Exit;
   }
