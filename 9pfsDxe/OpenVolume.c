@@ -27,22 +27,41 @@ P9OpenVolume (
   OUT EFI_FILE_PROTOCOL                **File
   )
 {
-  EFI_STATUS  Status;
-  P9_VOLUME   *Volume;
+  EFI_STATUS                Status;
+  P9_VOLUME                 *Volume;
 
   Volume = VOLUME_FROM_VOL_INTERFACE (This);
 
   Status = ConfigureP9 (Volume, L"10.0.2.2:564", L"255.255.255.0", L"10.0.2.100:564");
   if (EFI_ERROR (Status)) {
-    return Status;
+    goto Exit;
+  }
+
+  Volume->IsConnectDone = FALSE;
+  Status = ConnectP9 (Volume, &Volume->ConnectionToken);
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  while (!Volume->IsConnectDone) {
+    Volume->Tcp4->Poll (Volume->Tcp4);
+  }
+
+  if (EFI_ERROR (Volume->ConnectionToken.CompletionToken.Status)) {
+    Status = Volume->ConnectionToken.CompletionToken.Status;
+    goto Exit;
   }
 
   *File = AllocateZeroPool (sizeof (EFI_FILE_PROTOCOL));
   if (*File == NULL) {
-    return EFI_OUT_OF_RESOURCES;
+    Status = EFI_OUT_OF_RESOURCES;
+    goto Exit;
   }
 
   CopyMem (*File, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
 
-  return EFI_SUCCESS;
+  Status = EFI_SUCCESS;
+
+Exit:
+  return Status;
 }

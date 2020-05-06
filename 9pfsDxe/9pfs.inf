@@ -41,6 +41,7 @@
   9pfs.h
   9pfs.c
   9pLibConfigure.c
+  9pLibConnect.c
 
 [Packages]
   MdePkg/MdePkg.dec
