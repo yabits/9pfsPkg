@@ -72,22 +72,14 @@ struct P9RAttach {
 #pragma pack()
 
 typedef struct _P9_CONNECT_PRIVATE_DATA P9_CONNECT_PRIVATE_DATA;
-typedef struct _P9_VERSION_PRIVATE_DATA P9_VERSION_PRIVATE_DATA;
-typedef struct _P9_ATTACH_PRIVATE_DATA P9_ATTACH_PRIVATE_DATA;
+typedef struct _P9_MESSAGE_PRIVATE_DATA P9_MESSAGE_PRIVATE_DATA;
 
 struct _P9_CONNECT_PRIVATE_DATA {
   EFI_TCP4_CONNECTION_TOKEN ConnectionToken;
   BOOLEAN                   IsConnectDone;
 };
 
-struct _P9_VERSION_PRIVATE_DATA {
-  EFI_TCP4_IO_TOKEN         TxIoToken;
-  EFI_TCP4_IO_TOKEN         RxIoToken;
-  BOOLEAN                   IsTxDone;
-  BOOLEAN                   IsRxDone;
-};
-
-struct _P9_ATTACH_PRIVATE_DATA {
+struct _P9_MESSAGE_PRIVATE_DATA {
   EFI_TCP4_IO_TOKEN         TxIoToken;
   EFI_TCP4_IO_TOKEN         RxIoToken;
   BOOLEAN                   IsTxDone;

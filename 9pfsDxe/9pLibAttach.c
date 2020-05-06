@@ -15,9 +15,9 @@ TxAttachCallback (
   IN VOID       *Context
   )
 {
-  P9_ATTACH_PRIVATE_DATA  *Attach;
+  P9_MESSAGE_PRIVATE_DATA  *Attach;
 
-  Attach = (P9_ATTACH_PRIVATE_DATA *)Context;
+  Attach = (P9_MESSAGE_PRIVATE_DATA *)Context;
 
   Print (L"%a: %r\r\n", __func__, Attach->TxIoToken.CompletionToken.Status);
 
@@ -31,9 +31,9 @@ RxAttachCallback (
   IN VOID       *Context
   )
 {
-  P9_ATTACH_PRIVATE_DATA  *Attach;
+  P9_MESSAGE_PRIVATE_DATA  *Attach;
 
-  Attach = (P9_ATTACH_PRIVATE_DATA *)Context;
+  Attach = (P9_MESSAGE_PRIVATE_DATA *)Context;
 
   Print (L"%a: %r\r\n", __func__, Attach->RxIoToken.CompletionToken.Status);
 
@@ -50,7 +50,7 @@ P9Attach (
   )
 {
   EFI_STATUS                    Status;
-  P9_ATTACH_PRIVATE_DATA        *Attach;
+  P9_MESSAGE_PRIVATE_DATA       *Attach;
   EFI_TCP4_PROTOCOL             *Tcp4;
   UINTN                         UNameSize;
   UINTN                         ANameSize;
@@ -62,7 +62,7 @@ P9Attach (
 
   Tcp4 = Volume->Tcp4;
 
-  Attach = AllocateZeroPool (sizeof (P9_ATTACH_PRIVATE_DATA));
+  Attach = AllocateZeroPool (sizeof (P9_MESSAGE_PRIVATE_DATA));
   if (Attach == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;

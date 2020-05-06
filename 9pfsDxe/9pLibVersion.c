@@ -15,9 +15,9 @@ TxVersionCallback (
   IN VOID       *Context
   )
 {
-  P9_VERSION_PRIVATE_DATA *Version;
+  P9_MESSAGE_PRIVATE_DATA *Version;
 
-  Version = (P9_VERSION_PRIVATE_DATA *)Context;
+  Version = (P9_MESSAGE_PRIVATE_DATA *)Context;
 
   Print (L"%a: %r\r\n", __func__, Version->TxIoToken.CompletionToken.Status);
 
@@ -31,9 +31,9 @@ RxVersionCallback (
   IN VOID       *Context
   )
 {
-  P9_VERSION_PRIVATE_DATA *Version;
+  P9_MESSAGE_PRIVATE_DATA *Version;
 
-  Version = (P9_VERSION_PRIVATE_DATA *)Context;
+  Version = (P9_MESSAGE_PRIVATE_DATA *)Context;
 
   Print (L"%a: %r\r\n", __func__, Version->RxIoToken.CompletionToken.Status);
 
@@ -48,7 +48,7 @@ P9Version (
   )
 {
   EFI_STATUS                    Status;
-  P9_VERSION_PRIVATE_DATA       *Version;
+  P9_MESSAGE_PRIVATE_DATA       *Version;
   EFI_TCP4_PROTOCOL             *Tcp4;
   UINTN                         VersionSize;
   UINTN                         TxVersionSize;
@@ -58,7 +58,7 @@ P9Version (
 
   Tcp4 = Volume->Tcp4;
 
-  Version = AllocateZeroPool (sizeof (P9_VERSION_PRIVATE_DATA));
+  Version = AllocateZeroPool (sizeof (P9_MESSAGE_PRIVATE_DATA));
   if (Version == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;
