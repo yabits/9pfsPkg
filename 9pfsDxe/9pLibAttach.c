@@ -44,6 +44,7 @@ EFI_STATUS
 P9Attach (
   IN P9_VOLUME          *Volume,
   IN UINT16             Tag,
+  IN UINT32             Fid,
   IN CHAR8              *UNameStr,
   IN CHAR8              *ANameStr,
   OUT UINT8             *Qid
@@ -102,6 +103,7 @@ P9Attach (
   TxAttach->Header.Size = TxAttachSize;
   TxAttach->Header.Id = Tattach;
   TxAttach->Header.Tag = Tag;
+  TxAttach->Fid = Fid;
   TxAttach->AFid = (UINT32)~0; // NOFID
 
   UName = &TxAttach->UName;

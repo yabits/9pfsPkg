@@ -126,6 +126,7 @@ EFI_STATUS
 P9Attach (
   IN P9_VOLUME          *Volume,
   IN UINT16             Tag,
+  IN UINT32             Fid,
   IN CHAR8              *UNameStr,
   IN CHAR8              *ANameStr,
   OUT UINT8             *Qid
