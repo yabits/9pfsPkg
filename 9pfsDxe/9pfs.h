@@ -24,9 +24,17 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
 
+//
+// The 9P file system signature
+//
+#define P9_VOLUME_SIGNATURE         SIGNATURE_32 ('9', 'f', 's', 'v')
+
+#define VOLUME_FROM_VOL_INTERFACE(a) CR (a, P9_VOLUME, VolumeInterface, P9_VOLUME_SIGNATURE);
+
 typedef struct _P9_VOLUME P9_VOLUME;
 
 struct _P9_VOLUME {
+  UINTN                           Signature;
   EFI_HANDLE                      Handle;
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL VolumeInterface;
   EFI_TCP4_PROTOCOL               *Tcp4;
@@ -351,6 +359,14 @@ EFIAPI
 P9OpenVolume (
   IN  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *This,
   OUT EFI_FILE_PROTOCOL                **File
+  );
+
+EFI_STATUS
+ConfigureP9 (
+  IN OUT P9_VOLUME          *Volume,
+  IN CHAR16                 *StationAddrStr,
+  IN CHAR16                 *SubnetMaskStr,
+  IN CHAR16                 *RemoteAddrStr
   );
 
 //

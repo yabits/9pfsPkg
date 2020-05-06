@@ -27,6 +27,16 @@ P9OpenVolume (
   OUT EFI_FILE_PROTOCOL                **File
   )
 {
+  EFI_STATUS  Status;
+  P9_VOLUME   *Volume;
+
+  Volume = VOLUME_FROM_VOL_INTERFACE (This);
+
+  Status = ConfigureP9 (Volume, L"10.0.2.2:564", L"255.255.255.0", L"10.0.2.100:564");
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
+
   *File = AllocateZeroPool (sizeof (EFI_FILE_PROTOCOL));
   if (*File == NULL) {
     return EFI_OUT_OF_RESOURCES;

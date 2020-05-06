@@ -40,6 +40,7 @@
   Flush.c
   9pfs.h
   9pfs.c
+  9pLibConfigure.c
 
 [Packages]
   MdePkg/MdePkg.dec

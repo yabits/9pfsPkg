@@ -248,8 +248,9 @@ P9DriverBindingStart (
     goto Exit;
   }
 
-  Volume->Handle = ControllerHandle;
-  Volume->VolumeInterface.Revision = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION;
+  Volume->Signature                  = P9_VOLUME_SIGNATURE;
+  Volume->Handle                     = ControllerHandle;
+  Volume->VolumeInterface.Revision   = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION;
   Volume->VolumeInterface.OpenVolume = P9OpenVolume;
 
   //
