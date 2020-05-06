@@ -11,6 +11,9 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include <Uefi.h>
 
+#include <Guid/FileInfo.h>
+#include <Guid/FileSystemInfo.h>
+#include <Guid/FileSystemVolumeLabelInfo.h>
 #include <Protocol/ServiceBinding.h>
 #include <Protocol/Tcp4.h>
 
@@ -28,10 +31,19 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 // The 9P file system signature
 //
 #define P9_VOLUME_SIGNATURE         SIGNATURE_32 ('9', 'f', 's', 'v')
+#define P9_IFILE_SIGNATURE          SIGNATURE_32 ('9', 'f', 's', 'i')
+
+#define IFILE_FROM_FHAND(a)          CR (a, P9_IFILE, Handle, P9_IFILE_SIGNATURE)
 
 #define VOLUME_FROM_VOL_INTERFACE(a) CR (a, P9_VOLUME, VolumeInterface, P9_VOLUME_SIGNATURE);
 
 typedef struct _P9_VOLUME P9_VOLUME;
+
+typedef struct {
+  UINTN                           Signature;
+  EFI_FILE_PROTOCOL               Handle;
+  P9_VOLUME                       *Volume;
+} P9_IFILE;
 
 struct _P9_VOLUME {
   UINTN                           Signature;

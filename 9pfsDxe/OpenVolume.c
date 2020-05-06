@@ -36,6 +36,7 @@ P9OpenVolume (
   UINT32                    RootFlags;
   UINT8                     Qid[13];
   UINT32                    RootIoUnit;
+  P9_IFILE                  *IFile;
 
   Volume = VOLUME_FROM_VOL_INTERFACE (This);
 
@@ -68,13 +69,16 @@ P9OpenVolume (
     goto Exit;
   }
 
-  *File = AllocateZeroPool (sizeof (EFI_FILE_PROTOCOL));
-  if (*File == NULL) {
+  IFile = AllocateZeroPool (sizeof (P9_IFILE));
+  if (IFile == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;
   }
 
-  CopyMem (*File, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
+  IFile->Signature = P9_IFILE_SIGNATURE;
+  IFile->Volume = Volume;
+  CopyMem (&IFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
+  *File = &IFile->Handle;
 
   Status = EFI_SUCCESS;
 
