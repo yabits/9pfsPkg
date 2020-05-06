@@ -24,6 +24,14 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
 
+typedef struct _P9_VOLUME P9_VOLUME;
+
+struct _P9_VOLUME {
+  EFI_HANDLE                      Handle;
+  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL VolumeInterface;
+  EFI_TCP4_PROTOCOL               *Tcp4;
+};
+
 //
 // Function Prototypes
 //

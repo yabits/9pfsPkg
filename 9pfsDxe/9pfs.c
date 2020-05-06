@@ -240,8 +240,17 @@ P9DriverBindingStart (
   EFI_STATUS                      Status;
   EFI_SERVICE_BINDING_PROTOCOL    *ServiceBinding;
   EFI_HANDLE                      ChildHandle;
-  EFI_TCP4_PROTOCOL               *Tcp4;
-  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *VolumeInterface;
+  P9_VOLUME                       *Volume;
+
+  Volume = AllocateZeroPool (sizeof (P9_VOLUME));
+  if (Volume == NULL) {
+    Status = EFI_OUT_OF_RESOURCES;
+    goto Exit;
+  }
+
+  Volume->Handle = ControllerHandle;
+  Volume->VolumeInterface.Revision = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION;
+  Volume->VolumeInterface.OpenVolume = P9OpenVolume;
 
   //
   // Open ServiceBinding
@@ -275,35 +284,32 @@ P9DriverBindingStart (
   Status = gBS->OpenProtocol (
                   ChildHandle,
                   &gEfiTcp4ProtocolGuid,
-                  (VOID **) &Tcp4,
+                  (VOID **) &Volume->Tcp4,
                   This->DriverBindingHandle,
-                  ControllerHandle,
+                  Volume->Handle,
                   EFI_OPEN_PROTOCOL_BY_DRIVER
                   );
   if (EFI_ERROR (Status)) {
     goto Exit;
   }
 
-  VolumeInterface = AllocateZeroPool (sizeof (EFI_SIMPLE_FILE_SYSTEM_PROTOCOL));
-  if (VolumeInterface == NULL) {
-    Status = EFI_OUT_OF_RESOURCES;
-    goto Exit;
-  }
-
-  VolumeInterface->Revision   = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION;
-  VolumeInterface->OpenVolume = P9OpenVolume;
-
   Status = gBS->InstallMultipleProtocolInterfaces (
-                  &ControllerHandle,
+                  &Volume->Handle,
                   &gEfiSimpleFileSystemProtocolGuid,
-                  VolumeInterface,
+                  &Volume->VolumeInterface,
                   NULL
                   );
   if (EFI_ERROR (Status)) {
     goto Exit;
   }
 
+  return EFI_SUCCESS;
+
 Exit:
+  if (Volume != NULL) {
+    FreePool (Volume);
+  }
+
   return Status;
 }
 
