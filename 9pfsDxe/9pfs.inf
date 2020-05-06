@@ -47,6 +47,7 @@
   9pLibVersion.c
   9pLibAttach.c
   9pLibLOpen.c
+  9pLibGetAttr.c
 
 [Packages]
   MdePkg/MdePkg.dec

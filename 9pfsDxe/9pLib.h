@@ -34,6 +34,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define Rattach     105
 #define Tlopen      12
 #define Rlopen      13
+#define Tgetattr    24
+#define Rgetattr    25
 
 #pragma pack(1)
 struct P9Header {
@@ -82,6 +84,36 @@ struct P9RLOpen {
   struct P9Header Header;
   UINT8           Qid[13];
   UINT32          IoUnit;
+};
+
+struct P9TGetAttr {
+  struct P9Header Header;
+  UINT32          Fid;
+  UINT64          RequestMask;
+};
+
+struct P9RGetAttr {
+  struct P9Header Header;
+  UINT64          Valid;
+  UINT8           Qid[13];
+  UINT32          Mode;
+  UINT32          Uid;
+  UINT32          Gid;
+  UINT64          NLink;
+  UINT64          RDev;
+  UINT64          Size;
+  UINT64          BlkSize;
+  UINT64          Blocks;
+  UINT64          ATimeSec;
+  UINT64          ATimeNSec;
+  UINT64          MTimeSec;
+  UINT64          MTimeNSec;
+  UINT64          CTimeSec;
+  UINT64          CTimeNSec;
+  UINT64          BTimeSec;
+  UINT64          BTimeNSec;
+  UINT64          Gen;
+  UINT64          DataVersion;
 };
 #pragma pack()
 
@@ -154,6 +186,15 @@ P9LOpen (
   IN UINT32             Flags,
   OUT UINT8             *Qid,
   OUT UINT32            *IoUnit
+  );
+
+EFI_STATUS
+P9GetAttr (
+  IN P9_VOLUME          *Volume,
+  IN UINT16             Tag,
+  IN UINT32             Fid,
+  IN UINT64             RequestMask,
+  OUT struct P9RGetAttr *RxGetAttr
   );
 
 #endif
