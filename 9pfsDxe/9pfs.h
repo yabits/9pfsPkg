@@ -38,8 +38,6 @@ struct _P9_VOLUME {
   EFI_HANDLE                      Handle;
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL VolumeInterface;
   EFI_TCP4_PROTOCOL               *Tcp4;
-  EFI_TCP4_CONNECTION_TOKEN       ConnectionToken;
-  BOOLEAN                         IsConnectDone;
 };
 
 //
@@ -373,8 +371,7 @@ ConfigureP9 (
 
 EFI_STATUS
 ConnectP9 (
-  IN P9_VOLUME                  *Volume,
-  IN EFI_TCP4_CONNECTION_TOKEN  *ConnectionToken
+  IN P9_VOLUME                  *Volume
   );
 
 //

@@ -8,6 +8,13 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "9pfs.h"
 
+typedef struct _P9_CONNECT_PRIVATE_DATA P9_CONNECT_PRIVATE_DATA;
+
+struct _P9_CONNECT_PRIVATE_DATA {
+  EFI_TCP4_CONNECTION_TOKEN ConnectionToken;
+  BOOLEAN                   IsConnectDone;
+};
+
 VOID
 EFIAPI
 P9ConnectionCallback (
@@ -15,40 +22,53 @@ P9ConnectionCallback (
   IN VOID       *Context
   )
 {
-  P9_VOLUME                 *Volume;
-  EFI_TCP4_CONNECTION_TOKEN *ConnectionToken;
-  EFI_STATUS                Status;
+  P9_CONNECT_PRIVATE_DATA *Connect;
 
-  Volume = (P9_VOLUME *)Context;
-  ConnectionToken = &Volume->ConnectionToken;
-  Status = ConnectionToken->CompletionToken.Status;
-  Print (L"%a: %r\r\n", __func__, Status);
+  Connect = (P9_CONNECT_PRIVATE_DATA *)Context;
 
-  Volume->IsConnectDone = TRUE;
+  Print (L"%a: %r\r\n", __func__, Connect->ConnectionToken.CompletionToken.Status);
+
+  Connect->IsConnectDone = TRUE;
 }
 
 EFI_STATUS
 ConnectP9 (
-  IN P9_VOLUME              *Volume,
-  EFI_TCP4_CONNECTION_TOKEN *ConnectionToken
+  IN P9_VOLUME              *Volume
 )
 {
   EFI_STATUS                Status;
+  P9_CONNECT_PRIVATE_DATA   *Connect;
+
+  Connect = AllocateZeroPool (sizeof (P9_CONNECT_PRIVATE_DATA));
+  if (Connect == NULL) {
+    return EFI_OUT_OF_RESOURCES;
+  }
 
   Status = gBS->CreateEvent(
       EVT_NOTIFY_SIGNAL,
       TPL_CALLBACK,
       P9ConnectionCallback,
-      Volume,
-      &ConnectionToken->CompletionToken.Event);
+      Connect,
+      &Connect->ConnectionToken.CompletionToken.Event);
   if (EFI_ERROR (Status)) {
     return Status;
   }
 
-  Status = Volume->Tcp4->Connect (Volume->Tcp4, ConnectionToken);
+  Connect->IsConnectDone = FALSE;
+  Status = Volume->Tcp4->Connect (Volume->Tcp4, &Connect->ConnectionToken);
   if (EFI_ERROR (Status)) {
     return Status;
   }
+
+  while (!Connect->IsConnectDone) {
+    Volume->Tcp4->Poll (Volume->Tcp4);
+  }
+
+  if (EFI_ERROR (Connect->ConnectionToken.CompletionToken.Status)) {
+    Status = Connect->ConnectionToken.CompletionToken.Status;
+  }
+
+  FreePool (Connect);
 
   return Status;
 }

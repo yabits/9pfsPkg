@@ -37,18 +37,8 @@ P9OpenVolume (
     goto Exit;
   }
 
-  Volume->IsConnectDone = FALSE;
-  Status = ConnectP9 (Volume, &Volume->ConnectionToken);
+  Status = ConnectP9 (Volume);
   if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  while (!Volume->IsConnectDone) {
-    Volume->Tcp4->Poll (Volume->Tcp4);
-  }
-
-  if (EFI_ERROR (Volume->ConnectionToken.CompletionToken.Status)) {
-    Status = Volume->ConnectionToken.CompletionToken.Status;
     goto Exit;
   }
 
