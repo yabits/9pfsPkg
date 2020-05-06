@@ -141,7 +141,7 @@ P9Attach (
       RxAttach,
       sizeof (struct P9RAttach));
   if (EFI_ERROR (Status)) {
-    return Status;
+    goto Exit;
   }
 
   while (!Attach->IsRxDone) {
@@ -149,6 +149,7 @@ P9Attach (
   }
 
   if (RxAttach->Header.Id != Rattach) {
+    // TODO: Set Status
     Print (L"Rattach expected\r\n");
     goto Exit;
   }
