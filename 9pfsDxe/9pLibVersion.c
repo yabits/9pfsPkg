@@ -180,6 +180,10 @@ P9Version (
   *MSize = RxVersion->MSize;
 
 Exit:
+  if (Version != NULL) {
+    FreePool (Version);
+  }
+
   if (TxVersion != NULL) {
     FreePool (TxVersion);
   }
