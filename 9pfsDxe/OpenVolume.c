@@ -30,12 +30,8 @@ P9OpenVolume (
 {
   EFI_STATUS                Status;
   P9_VOLUME                 *Volume;
-  UINT16                    Tag;
-  UINT32                    RootFid;
   UINT8                     RootQid[13];
-  UINT32                    RootFlags;
-  UINT8                     Qid[13];
-  UINT32                    RootIoUnit;
+  UINT32                    RootFid;
   P9_IFILE                  *IFile;
 
   Volume = VOLUME_FROM_VOL_INTERFACE (This);
@@ -56,15 +52,9 @@ P9OpenVolume (
     goto Exit;
   }
 
-  Tag = 1;
   RootFid = 1;
-  Status = P9Attach (Volume, Tag, RootFid, "root", "/tmp/9", RootQid);
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  RootFlags = 0;
-  Status = P9LOpen (Volume, Tag, RootFid, RootFlags, Qid, &RootIoUnit);
+  Volume->Tag = 1;
+  Status = P9Attach (Volume, Volume->Tag, RootFid, "root", "/tmp/9", RootQid);
   if (EFI_ERROR (Status)) {
     goto Exit;
   }
@@ -77,6 +67,7 @@ P9OpenVolume (
 
   IFile->Signature = P9_IFILE_SIGNATURE;
   IFile->Volume = Volume;
+  IFile->Fid = RootFid;
   CopyMem (&IFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
   *File = &IFile->Handle;
 

@@ -103,7 +103,7 @@ P9GetFileInfo (
     return EFI_OUT_OF_RESOURCES;
   }
 
-  Status = P9GetAttr (Volume, 1, 1, 0x00003fffULL, Attr);
+  Status = P9GetAttr (Volume, Volume->Tag, IFile->Fid, 0x00003fffULL, Attr);
   if (EFI_ERROR (Status)) {
     goto Exit;
   }
