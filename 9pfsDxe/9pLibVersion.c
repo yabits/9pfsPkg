@@ -6,44 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
-#include "9pfs.h"
-
-typedef struct _P9_VERSION_PRIVATE_DATA P9_VERSION_PRIVATE_DATA;
-
-struct _P9_VERSION_PRIVATE_DATA {
-  EFI_TCP4_IO_TOKEN         TxIoToken;
-  EFI_TCP4_IO_TOKEN         RxIoToken;
-  BOOLEAN                   IsTxDone;
-  BOOLEAN                   IsRxDone;
-};
-
-#define Tversion  100
-#define Rversion  101
-
-#pragma pack(1)
-struct P9Header {
-  UINT32  Size;
-  UINT8   Id;
-  UINT16  Tag;
-};
-
-struct P9String {
-  UINT16  Size;
-  CHAR8   String[0];
-};
-
-struct P9TxVersion {
-  struct P9Header Header;
-  UINT32          MSize;
-  struct P9String Version;
-};
-
-struct P9RxVersion {
-  struct P9Header Header;
-  UINT32          MSize;
-  struct P9String Version;
-};
-#pragma pack()
+#include "9pLib.h"
 
 VOID
 EFIAPI

@@ -6,14 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
-#include "9pfs.h"
-
-typedef struct _P9_CONNECT_PRIVATE_DATA P9_CONNECT_PRIVATE_DATA;
-
-struct _P9_CONNECT_PRIVATE_DATA {
-  EFI_TCP4_CONNECTION_TOKEN ConnectionToken;
-  BOOLEAN                   IsConnectDone;
-};
+#include "9pLib.h"
 
 VOID
 EFIAPI

@@ -6,9 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
-#include "9pfs.h"
-
-#define FRAGMENT_SIZE 576
+#include "9pLib.h"
 
 EFI_STATUS
 TransmitTcp4 (

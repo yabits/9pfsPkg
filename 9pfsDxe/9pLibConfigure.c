@@ -6,7 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
-#include "9pfs.h"
+#include "9pLib.h"
 
 EFI_STATUS
 StrToIpv4Addr (

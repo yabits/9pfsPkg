@@ -6,45 +6,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
-#include "9pfs.h"
-
-typedef struct _P9_ATTACH_PRIVATE_DATA P9_ATTACH_PRIVATE_DATA;
-
-struct _P9_ATTACH_PRIVATE_DATA {
-  EFI_TCP4_IO_TOKEN         TxIoToken;
-  EFI_TCP4_IO_TOKEN         RxIoToken;
-  BOOLEAN                   IsTxDone;
-  BOOLEAN                   IsRxDone;
-};
-
-#define Tattach  104
-#define Rattach  105
-
-#pragma pack(1)
-struct P9Header {
-  UINT32  Size;
-  UINT8   Id;
-  UINT16  Tag;
-};
-
-struct P9String {
-  UINT16  Size;
-  CHAR8   String[0];
-};
-
-struct P9TAttach {
-  struct P9Header Header;
-  UINT32          Fid;
-  UINT32          AFid;
-  struct P9String UName;
-  struct P9String AName;
-};
-
-struct P9RAttach {
-  struct P9Header Header;
-  UINT8           Qid[13];
-};
-#pragma pack()
+#include "9pLib.h"
 
 VOID
 EFIAPI
