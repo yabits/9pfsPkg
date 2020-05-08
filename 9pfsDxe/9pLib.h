@@ -52,13 +52,13 @@ struct P9String {
   CHAR8   String[0];
 };
 
-struct P9TxVersion {
+struct P9TVersion {
   struct P9Header Header;
   UINT32          MSize;
   struct P9String Version;
 };
 
-struct P9RxVersion {
+struct P9RVersion {
   struct P9Header Header;
   UINT32          MSize;
   struct P9String Version;
