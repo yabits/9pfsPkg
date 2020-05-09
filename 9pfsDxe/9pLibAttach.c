@@ -43,11 +43,11 @@ RxAttachCallback (
 EFI_STATUS
 P9Attach (
   IN P9_VOLUME          *Volume,
-  IN UINT16             Tag,
   IN UINT32             Fid,
+  IN UINT32             AFid,
   IN CHAR8              *UNameStr,
   IN CHAR8              *ANameStr,
-  OUT UINT8             *Qid
+  OUT P9_IFILE          *IFile
   )
 {
   EFI_STATUS                    Status;
@@ -102,9 +102,9 @@ P9Attach (
 
   TxAttach->Header.Size = TxAttachSize;
   TxAttach->Header.Id = Tattach;
-  TxAttach->Header.Tag = Tag;
+  TxAttach->Header.Tag = Volume->Tag;
   TxAttach->Fid = Fid;
-  TxAttach->AFid = P9_NOFID;
+  TxAttach->AFid = AFid;
 
   UName = &TxAttach->UName;
   AName = (P9String *)((UINT8 *)&TxAttach->UName + sizeof (P9String) + sizeof (CHAR8) * UNameSize);
@@ -154,7 +154,7 @@ P9Attach (
     goto Exit;
   }
 
-  CopyMem (Qid, &RxAttach->Qid, sizeof (UINT8) * 13);
+  CopyMem (&IFile->Qid, &RxAttach->Qid, QID_SIZE);
 
 Exit:
   if (Attach != NULL) {

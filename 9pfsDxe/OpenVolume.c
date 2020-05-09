@@ -30,11 +30,10 @@ P9OpenVolume (
 {
   EFI_STATUS                Status;
   P9_VOLUME                 *Volume;
-  Qid                       RootQid;
-  UINT32                    RootFid;
   P9_IFILE                  *IFile;
 
-  Volume = VOLUME_FROM_VOL_INTERFACE (This);
+  Volume  = VOLUME_FROM_VOL_INTERFACE (This);
+  IFile   = NULL;
 
   Status = ConfigureP9 (Volume, L"10.0.2.2:564", L"255.255.255.0", L"10.0.2.100:564");
   if (EFI_ERROR (Status)) {
@@ -46,15 +45,9 @@ P9OpenVolume (
     goto Exit;
   }
 
-  Volume->MSize = 8192;
-  Status = P9Version (Volume, &Volume->MSize, "9P2000.L");
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  RootFid = 1;
-  Volume->Tag = 1;
-  Status = P9Attach (Volume, Volume->Tag, RootFid, "root", "/tmp/9", &RootQid);
+  Volume->Tag   = 1;
+  Volume->MSize = P9_MSIZE;
+  Status = P9Version (Volume, &Volume->MSize);
   if (EFI_ERROR (Status)) {
     goto Exit;
   }
@@ -65,14 +58,24 @@ P9OpenVolume (
     goto Exit;
   }
 
-  IFile->Signature = P9_IFILE_SIGNATURE;
-  IFile->Volume = Volume;
-  IFile->Fid = RootFid;
+  IFile->Signature  = P9_IFILE_SIGNATURE;
+  IFile->Volume     = Volume;
+  IFile->Fid        = 1; // TODO: Use random number
   CopyMem (&IFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
+
+  Status = P9Attach (Volume, IFile->Fid, P9_NOFID, "root", "/tmp/9", IFile);
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
   *File = &IFile->Handle;
 
-  Status = EFI_SUCCESS;
+  return EFI_SUCCESS;
 
 Exit:
+  if (IFile != NULL) {
+    FreePool (IFile);
+  }
+
   return Status;
 }

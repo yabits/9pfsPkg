@@ -43,14 +43,14 @@ RxVersionCallback (
 EFI_STATUS
 P9Version (
   IN P9_VOLUME          *Volume,
-  IN OUT UINT32         *MSize,
-  IN CHAR8              *VersionString
+  IN OUT UINT32         *MSize
   )
 {
   EFI_STATUS                    Status;
   P9_MESSAGE_PRIVATE_DATA       *Version;
   EFI_TCP4_PROTOCOL             *Tcp4;
   UINTN                         VersionSize;
+  CHAR8                         *VersionString;
   UINTN                         TxVersionSize;
   UINTN                         RxVersionSize;
   P9TVersion                    *TxVersion;
@@ -86,6 +86,7 @@ P9Version (
     goto Exit;
   }
 
+  VersionString = P9_VERSION;
   VersionSize = AsciiStrLen (VersionString);
   TxVersionSize = sizeof (P9TVersion) + sizeof (CHAR8) * VersionSize;
   TxVersion = AllocateZeroPool (TxVersionSize);
@@ -96,7 +97,7 @@ P9Version (
 
   TxVersion->Header.Size = TxVersionSize;
   TxVersion->Header.Id = Tversion;
-  TxVersion->Header.Tag = (UINT16)~0;
+  TxVersion->Header.Tag = P9_NOTAG;
   TxVersion->MSize = *MSize;
   TxVersion->Version.Size = VersionSize;
   CopyMem (&TxVersion->Version.String, VersionString, sizeof (CHAR8) * VersionSize);

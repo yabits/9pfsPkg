@@ -27,6 +27,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
 
+#include "9p.h"
+
 //
 // The 9P file system signature
 //
@@ -44,6 +46,7 @@ typedef struct {
   EFI_FILE_PROTOCOL               Handle;
   P9_VOLUME                       *Volume;
   UINT32                          Fid;
+  Qid                             Qid;
 } P9_IFILE;
 
 struct _P9_VOLUME {

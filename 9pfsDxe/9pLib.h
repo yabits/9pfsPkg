@@ -79,18 +79,17 @@ ConnectP9 (
 EFI_STATUS
 P9Version (
   IN P9_VOLUME          *Volume,
-  IN OUT UINT32         *MSize,
-  IN CHAR8              *VersionString
+  IN OUT UINT32         *MSize
   );
 
 EFI_STATUS
 P9Attach (
   IN P9_VOLUME          *Volume,
-  IN UINT16             Tag,
   IN UINT32             Fid,
+  IN UINT32             AFid,
   IN CHAR8              *UNameStr,
   IN CHAR8              *ANameStr,
-  OUT Qid               *Qid
+  OUT P9_IFILE          *IFile
   );
 
 EFI_STATUS
