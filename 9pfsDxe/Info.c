@@ -87,7 +87,7 @@ P9GetFileInfo (
   EFI_STATUS        Status;
   P9_IFILE          *IFile;
   P9_VOLUME         *Volume;
-  struct P9RGetAttr *Attr;
+  P9RGetAttr        *Attr;
   EFI_FILE_INFO     *FileInfo;
 
   if (*BufferSize < sizeof (EFI_FILE_INFO)) {
@@ -98,7 +98,7 @@ P9GetFileInfo (
   IFile = IFILE_FROM_FHAND (FHand);
   Volume = IFile->Volume;
 
-  Attr = AllocateZeroPool (sizeof (struct P9RGetAttr));
+  Attr = AllocateZeroPool (sizeof (P9RGetAttr));
   if (Attr == NULL) {
     return EFI_OUT_OF_RESOURCES;
   }

@@ -46,15 +46,15 @@ P9LOpen (
   IN UINT16             Tag,
   IN UINT32             Fid,
   IN UINT32             Flags,
-  OUT UINT8             *Qid,
+  OUT Qid               *Qid,
   OUT UINT32            *IoUnit
   )
 {
   EFI_STATUS                    Status;
   P9_MESSAGE_PRIVATE_DATA       *Open;
   EFI_TCP4_PROTOCOL             *Tcp4;
-  struct P9TLOpen               *TxOpen;
-  struct P9RLOpen               *RxOpen;
+  P9TLOpen                      *TxOpen;
+  P9RLOpen                      *RxOpen;
 
   Tcp4 = Volume->Tcp4;
 
@@ -86,13 +86,13 @@ P9LOpen (
     goto Exit;
   }
 
-  TxOpen = AllocateZeroPool (sizeof (struct P9TLOpen));
+  TxOpen = AllocateZeroPool (sizeof (P9TLOpen));
   if (TxOpen == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;
   }
 
-  TxOpen->Header.Size = sizeof (struct P9TLOpen);
+  TxOpen->Header.Size = sizeof (P9TLOpen);
   TxOpen->Header.Id   = Tlopen;
   TxOpen->Header.Tag  = Tag;
   TxOpen->Fid         = Fid;
@@ -103,7 +103,7 @@ P9LOpen (
       Tcp4,
       &Open->TxIoToken,
       TxOpen,
-      sizeof (struct P9TLOpen)
+      sizeof (P9TLOpen)
       );
   if (EFI_ERROR (Status)) {
     goto Exit;
@@ -113,7 +113,7 @@ P9LOpen (
     Tcp4->Poll (Tcp4);
   }
 
-  RxOpen = AllocateZeroPool (sizeof (struct P9RLOpen));
+  RxOpen = AllocateZeroPool (sizeof (P9RLOpen));
   if (RxOpen == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;
@@ -124,7 +124,7 @@ P9LOpen (
       Tcp4,
       &Open->RxIoToken,
       RxOpen,
-      sizeof (struct P9RLOpen)
+      sizeof (P9RLOpen)
       );
   if (EFI_ERROR (Status)) {
     goto Exit;
@@ -140,7 +140,7 @@ P9LOpen (
     goto Exit;
   }
 
-  CopyMem (Qid, &RxOpen->Qid, sizeof (UINT8) * 13);
+  CopyMem (Qid, &RxOpen->Qid, QID_SIZE);
   *IoUnit = RxOpen->IoUnit;
 
 Exit:

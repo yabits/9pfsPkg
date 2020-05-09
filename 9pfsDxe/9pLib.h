@@ -27,98 +27,10 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
 
+#include "9p.h"
 #include "9pfs.h"
 
 #define FRAGMENT_SIZE 576
-
-#define Tversion    100
-#define Rversion    101
-#define Tattach     104
-#define Rattach     105
-#define Tlopen      12
-#define Rlopen      13
-#define Tgetattr    24
-#define Rgetattr    25
-
-#pragma pack(1)
-struct P9Header {
-  UINT32  Size;
-  UINT8   Id;
-  UINT16  Tag;
-};
-
-struct P9String {
-  UINT16  Size;
-  CHAR8   String[0];
-};
-
-struct P9TVersion {
-  struct P9Header Header;
-  UINT32          MSize;
-  struct P9String Version;
-};
-
-struct P9RVersion {
-  struct P9Header Header;
-  UINT32          MSize;
-  struct P9String Version;
-};
-
-struct P9TAttach {
-  struct P9Header Header;
-  UINT32          Fid;
-  UINT32          AFid;
-  struct P9String UName;
-  struct P9String AName;
-};
-
-struct P9RAttach {
-  struct P9Header Header;
-  UINT8           Qid[13];
-};
-
-struct P9TLOpen {
-  struct P9Header Header;
-  UINT32          Fid;
-  UINT32          Flags;
-};
-
-struct P9RLOpen {
-  struct P9Header Header;
-  UINT8           Qid[13];
-  UINT32          IoUnit;
-};
-
-struct P9TGetAttr {
-  struct P9Header Header;
-  UINT32          Fid;
-  UINT64          RequestMask;
-};
-
-struct P9RGetAttr {
-  struct P9Header Header;
-  UINT64          Valid;
-  UINT8           Qid[13];
-  UINT32          Mode;
-  UINT32          Uid;
-  UINT32          Gid;
-  UINT64          NLink;
-  UINT64          RDev;
-  UINT64          Size;
-  UINT64          BlkSize;
-  UINT64          Blocks;
-  UINT64          ATimeSec;
-  UINT64          ATimeNSec;
-  UINT64          MTimeSec;
-  UINT64          MTimeNSec;
-  UINT64          CTimeSec;
-  UINT64          CTimeNSec;
-  UINT64          BTimeSec;
-  UINT64          BTimeNSec;
-  UINT64          Gen;
-  UINT64          DataVersion;
-};
-#pragma pack()
 
 typedef struct _P9_CONNECT_PRIVATE_DATA P9_CONNECT_PRIVATE_DATA;
 typedef struct _P9_MESSAGE_PRIVATE_DATA P9_MESSAGE_PRIVATE_DATA;
@@ -153,15 +65,15 @@ ReceiveTcp4 (
 
 EFI_STATUS
 ConfigureP9 (
-  IN OUT P9_VOLUME          *Volume,
-  IN CHAR16                 *StationAddrStr,
-  IN CHAR16                 *SubnetMaskStr,
-  IN CHAR16                 *RemoteAddrStr
+  IN OUT P9_VOLUME      *Volume,
+  IN CHAR16             *StationAddrStr,
+  IN CHAR16             *SubnetMaskStr,
+  IN CHAR16             *RemoteAddrStr
   );
 
 EFI_STATUS
 ConnectP9 (
-  IN P9_VOLUME                  *Volume
+  IN P9_VOLUME          *Volume
   );
 
 EFI_STATUS
@@ -178,7 +90,7 @@ P9Attach (
   IN UINT32             Fid,
   IN CHAR8              *UNameStr,
   IN CHAR8              *ANameStr,
-  OUT UINT8             *Qid
+  OUT Qid               *Qid
   );
 
 EFI_STATUS
@@ -187,7 +99,7 @@ P9LOpen (
   IN UINT16             Tag,
   IN UINT32             Fid,
   IN UINT32             Flags,
-  OUT UINT8             *Qid,
+  OUT Qid               *Qid,
   OUT UINT32            *IoUnit
   );
 
@@ -197,7 +109,7 @@ P9GetAttr (
   IN UINT16             Tag,
   IN UINT32             Fid,
   IN UINT64             RequestMask,
-  OUT struct P9RGetAttr *RxGetAttr
+  OUT P9RGetAttr        *RxGetAttr
   );
 
 #endif

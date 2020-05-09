@@ -53,8 +53,8 @@ P9Version (
   UINTN                         VersionSize;
   UINTN                         TxVersionSize;
   UINTN                         RxVersionSize;
-  struct P9TVersion             *TxVersion;
-  struct P9RVersion             *RxVersion;
+  P9TVersion                    *TxVersion;
+  P9RVersion                    *RxVersion;
 
   Tcp4 = Volume->Tcp4;
 
@@ -87,7 +87,7 @@ P9Version (
   }
 
   VersionSize = AsciiStrLen (VersionString);
-  TxVersionSize = sizeof (struct P9TVersion) + sizeof (CHAR8) * VersionSize;
+  TxVersionSize = sizeof (P9TVersion) + sizeof (CHAR8) * VersionSize;
   TxVersion = AllocateZeroPool (TxVersionSize);
   if (TxVersion == NULL) {
     Status = EFI_OUT_OF_RESOURCES;

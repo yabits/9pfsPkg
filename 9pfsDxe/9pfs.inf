@@ -38,6 +38,7 @@
   ReadWrite.c
   Info.c
   Flush.c
+  9p.h
   9pfs.h
   9pfs.c
   9pLib.h

@@ -46,13 +46,13 @@ P9GetAttr (
   IN UINT16             Tag,
   IN UINT32             Fid,
   IN UINT64             RequestMask,
-  OUT struct P9RGetAttr *RxGetAttr
+  OUT P9RGetAttr        *RxGetAttr
   )
 {
   EFI_STATUS                    Status;
   P9_MESSAGE_PRIVATE_DATA       *GetAttr;
   EFI_TCP4_PROTOCOL             *Tcp4;
-  struct P9TGetAttr             *TxGetAttr;
+  P9TGetAttr                    *TxGetAttr;
 
   Tcp4 = Volume->Tcp4;
 
@@ -84,13 +84,13 @@ P9GetAttr (
     goto Exit;
   }
 
-  TxGetAttr = AllocateZeroPool (sizeof (struct P9TGetAttr));
+  TxGetAttr = AllocateZeroPool (sizeof (P9TGetAttr));
   if (TxGetAttr == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;
   }
 
-  TxGetAttr->Header.Size  = sizeof (struct P9TGetAttr);
+  TxGetAttr->Header.Size  = sizeof (P9TGetAttr);
   TxGetAttr->Header.Id    = Tgetattr;
   TxGetAttr->Header.Tag   = Tag;
   TxGetAttr->Fid          = Fid;
@@ -101,7 +101,7 @@ P9GetAttr (
       Tcp4,
       &GetAttr->TxIoToken,
       TxGetAttr,
-      sizeof (struct P9TGetAttr)
+      sizeof (P9TGetAttr)
       );
   if (EFI_ERROR (Status)) {
     goto Exit;
@@ -116,7 +116,7 @@ P9GetAttr (
       Tcp4,
       &GetAttr->RxIoToken,
       RxGetAttr,
-      sizeof (struct P9RGetAttr)
+      sizeof (P9RGetAttr)
       );
   if (EFI_ERROR (Status)) {
     goto Exit;

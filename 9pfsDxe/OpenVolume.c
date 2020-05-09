@@ -30,7 +30,7 @@ P9OpenVolume (
 {
   EFI_STATUS                Status;
   P9_VOLUME                 *Volume;
-  UINT8                     RootQid[13];
+  Qid                       RootQid;
   UINT32                    RootFid;
   P9_IFILE                  *IFile;
 
@@ -54,7 +54,7 @@ P9OpenVolume (
 
   RootFid = 1;
   Volume->Tag = 1;
-  Status = P9Attach (Volume, Volume->Tag, RootFid, "root", "/tmp/9", RootQid);
+  Status = P9Attach (Volume, Volume->Tag, RootFid, "root", "/tmp/9", &RootQid);
   if (EFI_ERROR (Status)) {
     goto Exit;
   }

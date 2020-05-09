@@ -56,10 +56,10 @@ P9Attach (
   UINTN                         UNameSize;
   UINTN                         ANameSize;
   UINTN                         TxAttachSize;
-  struct P9TAttach              *TxAttach;
-  struct P9RAttach              *RxAttach;
-  struct P9String               *UName;
-  struct P9String               *AName;
+  P9TAttach                     *TxAttach;
+  P9RAttach                     *RxAttach;
+  P9String                      *UName;
+  P9String                      *AName;
 
   Tcp4 = Volume->Tcp4;
 
@@ -93,7 +93,7 @@ P9Attach (
 
   UNameSize = AsciiStrLen (UNameStr);
   ANameSize = AsciiStrLen (ANameStr);
-  TxAttachSize = sizeof (struct P9TAttach) + sizeof (CHAR8) * UNameSize + sizeof (CHAR8) * ANameSize;
+  TxAttachSize = sizeof (P9TAttach) + sizeof (CHAR8) * UNameSize + sizeof (CHAR8) * ANameSize;
   TxAttach = AllocateZeroPool (TxAttachSize);
   if (TxAttach == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
@@ -104,10 +104,10 @@ P9Attach (
   TxAttach->Header.Id = Tattach;
   TxAttach->Header.Tag = Tag;
   TxAttach->Fid = Fid;
-  TxAttach->AFid = (UINT32)~0; // NOFID
+  TxAttach->AFid = P9_NOFID;
 
   UName = &TxAttach->UName;
-  AName = (struct P9String *)((UINT8 *)&TxAttach->UName + sizeof (struct P9String) + sizeof (CHAR8) * UNameSize);
+  AName = (P9String *)((UINT8 *)&TxAttach->UName + sizeof (P9String) + sizeof (CHAR8) * UNameSize);
 
   UName->Size = UNameSize;
   AName->Size = ANameSize;
@@ -128,7 +128,7 @@ P9Attach (
     Tcp4->Poll (Tcp4);
   }
 
-  RxAttach = AllocateZeroPool (sizeof (struct P9RAttach));
+  RxAttach = AllocateZeroPool (sizeof (P9RAttach));
   if (RxAttach == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;
@@ -139,7 +139,7 @@ P9Attach (
       Tcp4,
       &Attach->RxIoToken,
       RxAttach,
-      sizeof (struct P9RAttach));
+      sizeof (P9RAttach));
   if (EFI_ERROR (Status)) {
     goto Exit;
   }
