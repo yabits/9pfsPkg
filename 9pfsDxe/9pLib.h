@@ -95,11 +95,7 @@ P9Attach (
 EFI_STATUS
 P9LOpen (
   IN P9_VOLUME          *Volume,
-  IN UINT16             Tag,
-  IN UINT32             Fid,
-  IN UINT32             Flags,
-  OUT Qid               *Qid,
-  OUT UINT32            *IoUnit
+  IN OUT P9_IFILE       *IFile
   );
 
 EFI_STATUS

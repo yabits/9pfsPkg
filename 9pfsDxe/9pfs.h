@@ -44,9 +44,12 @@ typedef struct _P9_VOLUME P9_VOLUME;
 typedef struct {
   UINTN                           Signature;
   EFI_FILE_PROTOCOL               Handle;
+  EFI_FILE_INFO                   *FileInfo;
   P9_VOLUME                       *Volume;
   UINT32                          Fid;
+  UINT32                          Flags;
   Qid                             Qid;
+  UINT32                          IoUnit;
 } P9_IFILE;
 
 struct _P9_VOLUME {

@@ -18,6 +18,25 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #define QID_SIZE    (UINTN)(13)
 
+#define P9_GETATTR_MODE         0x00000001ULL
+#define P9_GETATTR_NLINK        0x00000002ULL
+#define P9_GETATTR_UID          0x00000004ULL
+#define P9_GETATTR_GID          0x00000008ULL
+#define P9_GETATTR_RDEV         0x00000010ULL
+#define P9_GETATTR_ATIME        0x00000020ULL
+#define P9_GETATTR_MTIME        0x00000040ULL
+#define P9_GETATTR_CTIME        0x00000080ULL
+#define P9_GETATTR_INO          0x00000100ULL
+#define P9_GETATTR_SIZE         0x00000200ULL
+#define P9_GETATTR_BLOCKS       0x00000400ULL
+
+#define P9_GETATTR_BTIME        0x00000800ULL
+#define P9_GETATTR_GEN          0x00001000ULL
+#define P9_GETATTR_DATA_VERSION 0x00002000ULL
+
+#define P9_GETATTR_BASIC        0x000007ffULL /* Mask for fields up to BLOCKS */
+#define P9_GETATTR_ALL          0x00003fffULL /* Mask for All fields above */
+
 #pragma pack(1)
 typedef struct _Qid {
   UINT8   Type;

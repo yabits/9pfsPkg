@@ -43,11 +43,7 @@ RxOpenCallback (
 EFI_STATUS
 P9LOpen (
   IN P9_VOLUME          *Volume,
-  IN UINT16             Tag,
-  IN UINT32             Fid,
-  IN UINT32             Flags,
-  OUT Qid               *Qid,
-  OUT UINT32            *IoUnit
+  IN OUT P9_IFILE       *IFile
   )
 {
   EFI_STATUS                    Status;
@@ -94,9 +90,9 @@ P9LOpen (
 
   TxOpen->Header.Size = sizeof (P9TLOpen);
   TxOpen->Header.Id   = Tlopen;
-  TxOpen->Header.Tag  = Tag;
-  TxOpen->Fid         = Fid;
-  TxOpen->Flags       = Flags;
+  TxOpen->Header.Tag  = Volume->Tag;
+  TxOpen->Fid         = IFile->Fid;
+  TxOpen->Flags       = IFile->Flags;
 
   Open->IsTxDone = FALSE;
   Status = TransmitTcp4 (
@@ -140,8 +136,8 @@ P9LOpen (
     goto Exit;
   }
 
-  CopyMem (Qid, &RxOpen->Qid, QID_SIZE);
-  *IoUnit = RxOpen->IoUnit;
+  CopyMem (&IFile->Qid, &RxOpen->Qid, QID_SIZE);
+  IFile->IoUnit = RxOpen->IoUnit;
 
 Exit:
   if (Open != NULL) {
