@@ -101,10 +101,7 @@ P9LOpen (
 EFI_STATUS
 P9GetAttr (
   IN P9_VOLUME          *Volume,
-  IN UINT16             Tag,
-  IN UINT32             Fid,
-  IN UINT64             RequestMask,
-  OUT P9RGetAttr        *RxGetAttr
+  IN OUT P9_IFILE       *IFile
   );
 
 #endif
