@@ -70,7 +70,7 @@ P9GetInfo (
     return P9GetFileInfo (FHand, BufferSize, Buffer);
   }
 
-  return EFI_SUCCESS;
+  return EFI_UNSUPPORTED;
 }
 
 /**
