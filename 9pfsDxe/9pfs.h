@@ -57,6 +57,7 @@ struct _P9_VOLUME {
   EFI_HANDLE                      Handle;
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL VolumeInterface;
   EFI_TCP4_PROTOCOL               *Tcp4;
+  BOOLEAN                         IsConfigured;
   UINT32                          MSize;
   UINT16                          Tag;
 };

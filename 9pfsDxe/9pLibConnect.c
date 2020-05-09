@@ -28,6 +28,26 @@ ConnectP9 (
 {
   EFI_STATUS                Status;
   P9_CONNECT_PRIVATE_DATA   *Connect;
+  EFI_TCP4_CONNECTION_STATE Tcp4State;
+
+  Status = Volume->Tcp4->GetModeData (
+      Volume->Tcp4,
+      &Tcp4State,
+      NULL,
+      NULL,
+      NULL,
+      NULL
+      );
+  if (EFI_ERROR (Status)) {
+    Print (L"%a:%d\n", __func__, __LINE__);
+    goto Exit;
+  }
+
+  if (Tcp4State != Tcp4StateClosed) {
+    Print (L"%a:%d\n", __func__, __LINE__);
+    Status = EFI_ALREADY_STARTED;
+    goto Exit;
+  }
 
   Connect = AllocateZeroPool (sizeof (P9_CONNECT_PRIVATE_DATA));
   if (Connect == NULL) {

@@ -75,6 +75,10 @@ ConfigureP9 (
     return EFI_INVALID_PARAMETER;
   }
 
+  if (Volume->IsConfigured == TRUE) {
+    return EFI_ALREADY_STARTED;
+  }
+
   Tcp4Config = NULL;
   ControlOption = NULL;
 
@@ -118,6 +122,8 @@ ConfigureP9 (
   Status = Volume->Tcp4->Configure (Volume->Tcp4, Tcp4Config);
   if (EFI_ERROR (Status)) {
     goto Done;
+  } else {
+    Volume->IsConfigured = TRUE;
   }
 
 Done:

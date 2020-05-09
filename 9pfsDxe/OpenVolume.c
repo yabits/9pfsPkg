@@ -36,12 +36,14 @@ P9OpenVolume (
   IFile   = NULL;
 
   Status = ConfigureP9 (Volume, L"10.0.2.2:564", L"255.255.255.0", L"10.0.2.100:564");
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR (Status) && Status != EFI_ALREADY_STARTED) {
+    Print (L"%a:%d: %r\n", __func__, __LINE__, Status);
     goto Exit;
   }
 
   Status = ConnectP9 (Volume);
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR (Status) && Status != EFI_ALREADY_STARTED) {
+    Print (L"%a:%d %r\n", __func__, __LINE__, Status);
     goto Exit;
   }
 
