@@ -84,9 +84,6 @@ TxGetAttrCallback (
   P9_MESSAGE_PRIVATE_DATA  *GetAttr;
 
   GetAttr = (P9_MESSAGE_PRIVATE_DATA *)Context;
-
-  Print (L"%a: %r\r\n", __func__, GetAttr->TxIoToken.CompletionToken.Status);
-
   GetAttr->IsTxDone = TRUE;
 }
 
@@ -100,9 +97,6 @@ RxGetAttrCallback (
   P9_MESSAGE_PRIVATE_DATA  *GetAttr;
 
   GetAttr = (P9_MESSAGE_PRIVATE_DATA *)Context;
-
-  Print (L"%a: %r\r\n", __func__, GetAttr->RxIoToken.CompletionToken.Status);
-
   GetAttr->IsRxDone = TRUE;
 }
 
@@ -199,7 +193,6 @@ P9GetAttr (
 
   if (RxGetAttr->Header.Id != Rgetattr) {
     // TODO: Set Status
-    Print (L"Rgetattr expected\n");
     goto Exit;
   }
 
@@ -224,13 +217,6 @@ P9GetAttr (
   FileInfo->PhysicalSize                 = RxGetAttr->BlkSize * RxGetAttr->Blocks;
   FileInfo->Attribute                    = EFI_FILE_DIRECTORY;
   FileInfo->FileName[0]                  = L'\0';
-
-  Print (L"Size: %d\n", FileInfo->Size);
-  Print (L"FileSize: %d\n", FileInfo->FileSize);
-  Print (L"PhysicalSize: %d\n", FileInfo->PhysicalSize);
-  Print (L"CreateTime: %t\n", FileInfo->CreateTime);
-  Print (L"ModificationTime: %t\n", FileInfo->ModificationTime);
-  Print (L"LastAccessTime: %t\n", FileInfo->LastAccessTime);
 
   Status = EFI_SUCCESS;
 

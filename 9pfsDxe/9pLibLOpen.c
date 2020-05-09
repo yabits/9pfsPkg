@@ -18,9 +18,6 @@ TxOpenCallback (
   P9_MESSAGE_PRIVATE_DATA  *Open;
 
   Open = (P9_MESSAGE_PRIVATE_DATA *)Context;
-
-  Print (L"%a: %r\r\n", __func__, Open->TxIoToken.CompletionToken.Status);
-
   Open->IsTxDone = TRUE;
 }
 
@@ -34,9 +31,6 @@ RxOpenCallback (
   P9_MESSAGE_PRIVATE_DATA  *Open;
 
   Open = (P9_MESSAGE_PRIVATE_DATA *)Context;
-
-  Print (L"%a: %r\r\n", __func__, Open->RxIoToken.CompletionToken.Status);
-
   Open->IsRxDone = TRUE;
 }
 
@@ -132,7 +126,6 @@ P9LOpen (
 
   if (RxOpen->Header.Id != Rlopen) {
     // TODO: Set Status
-    Print (L"Rlopen expected\n");
     goto Exit;
   }
 

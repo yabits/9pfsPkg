@@ -18,9 +18,6 @@ TxVersionCallback (
   P9_MESSAGE_PRIVATE_DATA *Version;
 
   Version = (P9_MESSAGE_PRIVATE_DATA *)Context;
-
-  Print (L"%a: %r\r\n", __func__, Version->TxIoToken.CompletionToken.Status);
-
   Version->IsTxDone = TRUE;
 }
 
@@ -34,9 +31,6 @@ RxVersionCallback (
   P9_MESSAGE_PRIVATE_DATA *Version;
 
   Version = (P9_MESSAGE_PRIVATE_DATA *)Context;
-
-  Print (L"%a: %r\r\n", __func__, Version->RxIoToken.CompletionToken.Status);
-
   Version->IsRxDone = TRUE;
 }
 
@@ -130,13 +124,11 @@ P9Version (
   }
 
   if (RxVersion->Header.Id != Rversion) {
-    Print (L"Rversion expected\n");
     Status = EFI_UNSUPPORTED;
     goto Exit;
   }
 
   if (AsciiStrnCmp (TxVersion->Version.String, RxVersion->Version.String, TxVersion->Version.Size) != 0) {
-    Print (L"Unsupported 9P Protocol: %a\n", RxVersion->Version.String);
     Status = EFI_UNSUPPORTED;
     goto Exit;
   }

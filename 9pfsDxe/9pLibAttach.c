@@ -18,9 +18,6 @@ TxAttachCallback (
   P9_MESSAGE_PRIVATE_DATA  *Attach;
 
   Attach = (P9_MESSAGE_PRIVATE_DATA *)Context;
-
-  Print (L"%a: %r\r\n", __func__, Attach->TxIoToken.CompletionToken.Status);
-
   Attach->IsTxDone = TRUE;
 }
 
@@ -34,9 +31,6 @@ RxAttachCallback (
   P9_MESSAGE_PRIVATE_DATA  *Attach;
 
   Attach = (P9_MESSAGE_PRIVATE_DATA *)Context;
-
-  Print (L"%a: %r\r\n", __func__, Attach->RxIoToken.CompletionToken.Status);
-
   Attach->IsRxDone = TRUE;
 }
 
@@ -150,7 +144,6 @@ P9Attach (
 
   if (RxAttach->Header.Id != Rattach) {
     // TODO: Set Status
-    Print (L"Rattach expected\r\n");
     goto Exit;
   }
 

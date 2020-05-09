@@ -18,9 +18,6 @@ P9ConnectionCallback (
   P9_CONNECT_PRIVATE_DATA *Connect;
 
   Connect = (P9_CONNECT_PRIVATE_DATA *)Context;
-
-  Print (L"%a: %r\r\n", __func__, Connect->ConnectionToken.CompletionToken.Status);
-
   Connect->IsConnectDone = TRUE;
 }
 
