@@ -8,6 +8,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "9pLib.h"
 
+#define BLK_UNIT    512
+
 #define	S_ISDIR(m)	((m & 0170000) == 0040000)	/* directory */
 #define	S_ISCHR(m)	((m & 0170000) == 0020000)	/* char special */
 #define	S_ISBLK(m)	((m & 0170000) == 0060000)	/* block special */
@@ -214,7 +216,7 @@ P9GetAttr (
   FileInfo->LastAccessTime.Nanosecond    = (UINT32)RxGetAttr->ATimeNSec;
   FileInfo->Size                         = sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * 1;
   FileInfo->FileSize                     = RxGetAttr->Size;
-  FileInfo->PhysicalSize                 = RxGetAttr->BlkSize * RxGetAttr->Blocks;
+  FileInfo->PhysicalSize                 = BLK_UNIT * RxGetAttr->Blocks;
   FileInfo->Attribute                    = EFI_FILE_DIRECTORY;
   FileInfo->FileName[0]                  = L'\0';
 
