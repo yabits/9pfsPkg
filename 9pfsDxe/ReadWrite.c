@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "9pfs.h"
+#include "9pLib.h"
 
 /**
 
@@ -91,8 +92,26 @@ P9Read (
      OUT VOID               *Buffer
   )
 {
+  EFI_STATUS        Status;
+  P9_IFILE          *IFile;
+  P9_VOLUME         *Volume;
+
   DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
-  return EFI_SUCCESS;
+
+  IFile = IFILE_FROM_FHAND (FHand);
+  Volume = IFile->Volume;
+
+  Status = P9LRead (Volume, IFile, (UINT32 *)BufferSize, Buffer);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
+    goto Exit;
+  }
+
+  Status = EFI_SUCCESS;
+
+Exit:
+  DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
+  return Status;
 }
 
 /**

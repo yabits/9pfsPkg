@@ -127,6 +127,19 @@ typedef struct _P9RGetAttr {
   UINT64          DataVersion;
 } P9RGetAttr;
 
+typedef struct _P9TRead {
+  P9Header        Header;
+  UINT32          Fid;
+  UINT64          Offset;
+  UINT32          Count;
+} P9TRead;
+
+typedef struct _P9RRead {
+  P9Header        Header;
+  UINT32          Count;
+  UINT8           Data[0];
+} P9RRead;
+
 typedef struct _P9TWalk {
   P9Header        Header;
   UINT32          Fid;
