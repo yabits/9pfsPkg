@@ -49,6 +49,9 @@
   9pLibAttach.c
   9pLibLOpen.c
   9pLibGetAttr.c
+  9pLibWalk.c
+  9pLibError.c
+  9pLibClunk.c
 
 [Packages]
   MdePkg/MdePkg.dec
