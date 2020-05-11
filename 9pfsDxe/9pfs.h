@@ -46,6 +46,7 @@ typedef struct {
   EFI_FILE_PROTOCOL               Handle;
   EFI_FILE_INFO                   *FileInfo;
   P9_VOLUME                       *Volume;
+  CHAR16                          *FileName;
   UINT32                          Fid;
   UINT32                          Flags;
   Qid                             Qid;
@@ -57,6 +58,7 @@ struct _P9_VOLUME {
   UINTN                           Signature;
   EFI_HANDLE                      Handle;
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL VolumeInterface;
+  P9_IFILE                        *Root;
   EFI_TCP4_PROTOCOL               *Tcp4;
   BOOLEAN                         IsConfigured;
   UINT32                          MSize;

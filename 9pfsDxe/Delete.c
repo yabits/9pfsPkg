@@ -25,5 +25,6 @@ P9Delete (
   IN EFI_FILE_PROTOCOL  *FHand
   )
 {
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   return EFI_SUCCESS;
 }

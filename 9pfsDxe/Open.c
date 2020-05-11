@@ -120,5 +120,6 @@ P9Open (
   IN  UINT64              Attributes
   )
 {
+  DEBUG ((DEBUG_INFO, "%a:%d FileName: %s\n", __func__, __LINE__, FileName));
   return P9OpenEx (FHand, NewHandle, FileName, OpenMode, Attributes, NULL);
 }

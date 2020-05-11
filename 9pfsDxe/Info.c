@@ -22,25 +22,30 @@ P9GetFileInfo (
   P9_IFILE          *IFile;
   P9_VOLUME         *Volume;
 
-  if (*BufferSize < sizeof (EFI_FILE_INFO)) {
-    *BufferSize = sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * 1;
-    return EFI_BUFFER_TOO_SMALL;
-  }
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
 
   IFile = IFILE_FROM_FHAND (FHand);
   Volume = IFile->Volume;
 
+  if (*BufferSize < sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * (StrLen (IFile->FileName) + 1)) {
+    *BufferSize = sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * (StrLen (IFile->FileName) + 1);
+    DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
+    return EFI_BUFFER_TOO_SMALL;
+  }
+
   Status = P9GetAttr (Volume, IFile);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
     goto Exit;
   }
 
   Buffer = IFile->FileInfo;
-  *BufferSize = sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * 1;
+  *BufferSize = sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * (StrLen (IFile->FileName) + 1);
 
   Status = EFI_SUCCESS;
 
 Exit:
+  DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
   return Status;
 }
 
@@ -70,6 +75,7 @@ P9GetInfo (
     return P9GetFileInfo (FHand, BufferSize, Buffer);
   }
 
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   return EFI_UNSUPPORTED;
 }
 
@@ -95,5 +101,6 @@ P9SetInfo (
   IN VOID               *Buffer
   )
 {
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   return EFI_SUCCESS;
 }

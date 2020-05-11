@@ -194,31 +194,32 @@ P9GetAttr (
   }
 
   if (RxGetAttr->Header.Id != Rgetattr) {
-    // TODO: Set Status
+    Status = P9Error (RxGetAttr, sizeof (P9RGetAttr));
     goto Exit;
   }
 
   FileInfo = IFile->FileInfo;
 
   if (FileInfo == NULL) {
-    FileInfo = AllocateZeroPool (sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * 1);
+    FileInfo = AllocateZeroPool (sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * (StrLen (IFile->FileName) + 1));
     if (FileInfo == NULL) {
       Status = EFI_OUT_OF_RESOURCES;
       goto Exit;
     }
   }
 
+  CopyMem (&IFile->Qid, &RxGetAttr->Qid, QID_SIZE);
   EpochToEfiTime (RxGetAttr->CTimeSec, &FileInfo->CreateTime);
   EpochToEfiTime (RxGetAttr->MTimeSec, &FileInfo->ModificationTime);
   EpochToEfiTime (RxGetAttr->ATimeSec, &FileInfo->LastAccessTime);
   FileInfo->CreateTime.Nanosecond        = (UINT32)RxGetAttr->CTimeNSec;
   FileInfo->ModificationTime.Nanosecond  = (UINT32)RxGetAttr->MTimeNSec;
   FileInfo->LastAccessTime.Nanosecond    = (UINT32)RxGetAttr->ATimeNSec;
-  FileInfo->Size                         = sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * 1;
+  FileInfo->Size                         = sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * (StrLen (IFile->FileName) + 1);
   FileInfo->FileSize                     = RxGetAttr->Size;
   FileInfo->PhysicalSize                 = BLK_UNIT * RxGetAttr->Blocks;
-  FileInfo->Attribute                    = EFI_FILE_DIRECTORY;
-  FileInfo->FileName[0]                  = L'\0';
+  FileInfo->Attribute                    = S_ISDIR (RxGetAttr->Mode) ? EFI_FILE_DIRECTORY : 0;
+  StrCpyS (FileInfo->FileName, StrLen (IFile->FileName) + 1, IFile->FileName);
 
   Status = EFI_SUCCESS;
 

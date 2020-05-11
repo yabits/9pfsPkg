@@ -32,18 +32,30 @@ P9OpenVolume (
   P9_VOLUME                 *Volume;
   P9_IFILE                  *IFile;
 
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
+
   Volume  = VOLUME_FROM_VOL_INTERFACE (This);
   IFile   = NULL;
 
   Status = ConfigureP9 (Volume, L"10.0.2.2:564", L"255.255.255.0", L"10.0.2.100:564");
-  if (EFI_ERROR (Status) && Status != EFI_ALREADY_STARTED) {
-    Print (L"%a:%d: %r\n", __func__, __LINE__, Status);
+  if (Status == EFI_ALREADY_STARTED) {
+    DEBUG ((DEBUG_INFO, "9P volume is already configured.\n"));
+    *File = &Volume->Root->Handle;
+    Status = EFI_SUCCESS;
+    goto Exit;
+  } else if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "Failed to configure 9P volume: %r\n", Status));
     goto Exit;
   }
 
   Status = ConnectP9 (Volume);
-  if (EFI_ERROR (Status) && Status != EFI_ALREADY_STARTED) {
-    Print (L"%a:%d %r\n", __func__, __LINE__, Status);
+  if (Status == EFI_ALREADY_STARTED) {
+    DEBUG ((DEBUG_INFO, "9P volume is already connected.\n"));
+    *File = &Volume->Root->Handle;
+    Status = EFI_SUCCESS;
+    goto Exit;
+  } else if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "Failed to connect 9P volume: %r\n", Status));
     goto Exit;
   }
 
@@ -51,26 +63,33 @@ P9OpenVolume (
   Volume->MSize = P9_MSIZE;
   Status = P9Version (Volume, &Volume->MSize);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
     goto Exit;
   }
 
   IFile = AllocateZeroPool (sizeof (P9_IFILE));
   if (IFile == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
     goto Exit;
   }
 
   IFile->Signature  = P9_IFILE_SIGNATURE;
   IFile->Volume     = Volume;
-  IFile->Fid        = 1; // TODO: Use random number
+  IFile->Fid        = GetFid ();
+  IFile->FileName   = L"";
   CopyMem (&IFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
 
   Status = P9Attach (Volume, IFile->Fid, P9_NOFID, "root", "/tmp/9", IFile);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
     goto Exit;
   }
 
   *File = &IFile->Handle;
+  Volume->Root = IFile;
+
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
 
   return EFI_SUCCESS;
 
@@ -78,6 +97,8 @@ Exit:
   if (IFile != NULL) {
     FreePool (IFile);
   }
+
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
 
   return Status;
 }

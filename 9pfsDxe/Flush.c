@@ -30,6 +30,7 @@ P9FlushEx (
   IN EFI_FILE_IO_TOKEN  *Token
   )
 {
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   return EFI_SUCCESS;
 }
 
@@ -51,6 +52,7 @@ P9Flush (
   IN EFI_FILE_PROTOCOL  *FHand
   )
 {
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   return P9FlushEx (FHand, NULL);
 }
 

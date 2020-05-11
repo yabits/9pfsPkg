@@ -39,35 +39,40 @@ ConnectP9 (
       NULL
       );
   if (EFI_ERROR (Status)) {
-    Print (L"%a:%d\n", __func__, __LINE__);
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
     goto Exit;
   }
 
   if (Tcp4State != Tcp4StateClosed) {
-    Print (L"%a:%d\n", __func__, __LINE__);
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
     Status = EFI_ALREADY_STARTED;
     goto Exit;
   }
 
   Connect = AllocateZeroPool (sizeof (P9_CONNECT_PRIVATE_DATA));
   if (Connect == NULL) {
-    return EFI_OUT_OF_RESOURCES;
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
+    Status = EFI_OUT_OF_RESOURCES;
+    goto Exit;
   }
 
-  Status = gBS->CreateEvent(
+  Status = gBS->CreateEvent (
       EVT_NOTIFY_SIGNAL,
       TPL_CALLBACK,
       P9ConnectionCallback,
       Connect,
-      &Connect->ConnectionToken.CompletionToken.Event);
+      &Connect->ConnectionToken.CompletionToken.Event
+      );
   if (EFI_ERROR (Status)) {
-    return Status;
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
+    goto Exit;
   }
 
   Connect->IsConnectDone = FALSE;
   Status = Volume->Tcp4->Connect (Volume->Tcp4, &Connect->ConnectionToken);
   if (EFI_ERROR (Status)) {
-    return Status;
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
+    goto Exit;
   }
 
   while (!Connect->IsConnectDone) {
@@ -75,10 +80,15 @@ ConnectP9 (
   }
 
   if (EFI_ERROR (Connect->ConnectionToken.CompletionToken.Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
     Status = Connect->ConnectionToken.CompletionToken.Status;
+    goto Exit;
   }
 
-  FreePool (Connect);
+Exit:
+  if (Connect != NULL) {
+    FreePool (Connect);
+  }
 
   return Status;
 }

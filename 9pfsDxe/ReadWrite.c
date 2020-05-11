@@ -91,6 +91,7 @@ P9Read (
      OUT VOID               *Buffer
   )
 {
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   return EFI_SUCCESS;
 }
 
@@ -114,6 +115,7 @@ P9ReadEx (
   IN OUT EFI_FILE_IO_TOKEN  *Token
   )
 {
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   return EFI_SUCCESS;
 }
 
@@ -142,6 +144,7 @@ P9Write (
   IN     VOID               *Buffer
   )
 {
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   return EFI_SUCCESS;
 }
 
@@ -165,5 +168,6 @@ P9WriteEx (
   IN OUT EFI_FILE_IO_TOKEN  *Token
   )
 {
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   return EFI_SUCCESS;
 }
