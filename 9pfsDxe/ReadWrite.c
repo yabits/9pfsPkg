@@ -29,6 +29,13 @@ P9GetPosition (
   OUT UINT64            *Position
   )
 {
+  P9_IFILE          *IFile;
+
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
+  IFile = IFILE_FROM_FHAND (FHand);
+  // TODO: Return EFI_UNSUPPORTED if it is not a file.
+  *Position = IFile->Position;
+
   return EFI_SUCCESS;
 }
 
@@ -51,6 +58,13 @@ P9SetPosition (
   IN UINT64             Position
   )
 {
+  P9_IFILE          *IFile;
+
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
+  IFile = IFILE_FROM_FHAND (FHand);
+  // TODO: Return EFI_UNSUPPORTED if it is not a file.
+  IFile->Position = Position;
+
   return EFI_SUCCESS;
 }
 

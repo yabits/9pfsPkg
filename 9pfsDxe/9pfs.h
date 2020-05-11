@@ -50,6 +50,7 @@ typedef struct {
   UINT32                          Flags;
   Qid                             Qid;
   UINT32                          IoUnit;
+  UINT64                          Position;
 } P9_IFILE;
 
 struct _P9_VOLUME {
