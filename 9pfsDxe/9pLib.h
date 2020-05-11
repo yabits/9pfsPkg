@@ -110,4 +110,10 @@ P9GetAttr (
   IN OUT P9_IFILE       *IFile
   );
 
+EFI_STATUS
+P9Clunk (
+  IN P9_VOLUME          *Volume,
+  IN P9_IFILE           *IFile
+  );
+
 #endif

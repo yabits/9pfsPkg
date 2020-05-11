@@ -126,6 +126,15 @@ typedef struct _P9RGetAttr {
   UINT64          Gen;
   UINT64          DataVersion;
 } P9RGetAttr;
+
+typedef struct _P9TClunk {
+  P9Header        Header;
+  UINT32          Fid;
+} P9TClunk;
+
+typedef struct _P9RClunk {
+  P9Header        Header;
+} P9RClunk;
 #pragma pack()
 
 enum {
@@ -140,6 +149,8 @@ enum {
   Tattach   = 104,
   Rattach,
   Tread     = 116,
-  Rread
+  Rread,
+  Tclunk    = 120,
+  Rclunk,
 };
 #endif

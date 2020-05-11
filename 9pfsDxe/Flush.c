@@ -8,6 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "9pfs.h"
+#include "9pLib.h"
 
 /**
 
@@ -68,5 +69,21 @@ P9Close (
   IN EFI_FILE_PROTOCOL  *FHand
   )
 {
-  return EFI_SUCCESS;
+  EFI_STATUS        Status;
+  P9_IFILE          *IFile;
+  P9_VOLUME         *Volume;
+
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
+
+  IFile = IFILE_FROM_FHAND (FHand);
+  Volume = IFile->Volume;
+
+  // TODO: Flush before clunk
+
+  if (IFile != Volume->Root) {
+    Status = P9Clunk (Volume, IFile);
+    FreePool (IFile);
+  }
+
+  return Status;
 }
