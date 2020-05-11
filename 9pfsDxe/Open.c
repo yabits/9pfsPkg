@@ -7,6 +7,13 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #include "9pfs.h"
+#include "9pLib.h"
+
+/* open-only flags */
+#define	O_RDONLY	0x0000		/* open for reading only */
+#define	O_WRONLY	0x0001		/* open for writing only */
+#define	O_RDWR		0x0002		/* open for reading and writing */
+#define	O_ACCMODE	0x0003		/* mask for above modes */
 
 /**
 
@@ -38,7 +45,50 @@ P9OpenEx (
   IN OUT EFI_FILE_IO_TOKEN    *Token
   )
 {
+  EFI_STATUS        Status;
+  P9_IFILE          *IFile;
+  P9_IFILE          *NewIFile;
+  P9_VOLUME         *Volume;
+
+  DEBUG ((DEBUG_INFO, "%a:%d FileName: %s\n", __func__, __LINE__, FileName));
+
+  IFile = IFILE_FROM_FHAND (FHand);
+  Volume = IFile->Volume;
+
+  NewIFile = AllocateZeroPool (sizeof (P9_IFILE));
+  if (NewIFile == NULL) {
+    Status = EFI_OUT_OF_RESOURCES;
+    goto Exit;
+  }
+
+  NewIFile->Signature  = P9_IFILE_SIGNATURE;
+  NewIFile->Volume     = Volume;
+  NewIFile->Fid        = GetFid ();
+  NewIFile->Flags      = O_RDONLY; // Currently supports read only.
+  CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
+  NewIFile->FileName   = AllocateZeroPool (StrLen (FileName) + 1);
+  StrCpyS (NewIFile->FileName, StrLen (FileName) + 1, FileName);
+
+  Status = P9Walk (Volume, IFile, NewIFile, FileName);
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  Status = P9LOpen (Volume, NewIFile);
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  *NewHandle = &NewIFile->Handle;
+
   return EFI_SUCCESS;
+
+Exit:
+  if (NewIFile != NULL) {
+    FreePool (NewIFile);
+  }
+
+  return Status;
 }
 
 /**
