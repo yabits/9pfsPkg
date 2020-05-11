@@ -143,7 +143,7 @@ P9Attach (
   }
 
   if (RxAttach->Header.Id != Rattach) {
-    // TODO: Set Status
+    Status = P9Error (RxAttach, sizeof (P9RAttach));
     goto Exit;
   }
 

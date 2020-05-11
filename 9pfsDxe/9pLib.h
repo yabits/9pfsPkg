@@ -77,6 +77,12 @@ ConnectP9 (
   );
 
 EFI_STATUS
+P9Error (
+  IN VOID               *Data,
+  IN UINTN              DataSize
+  );
+
+EFI_STATUS
 P9Version (
   IN P9_VOLUME          *Volume,
   IN OUT UINT32         *MSize

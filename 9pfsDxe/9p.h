@@ -55,6 +55,11 @@ typedef struct _P9Header {
   UINT16  Tag;
 } P9Header;
 
+typedef struct _P9RLError {
+  P9Header        Header;
+  UINT32          ECode;
+} P9RLError;
+
 typedef struct _P9TVersion {
   P9Header        Header;
   UINT32          MSize;
@@ -124,6 +129,8 @@ typedef struct _P9RGetAttr {
 #pragma pack()
 
 enum {
+  Tlerror   = 6,
+  Rlerror,
   Tlopen    = 12,
   Rlopen,
   Tgetattr  = 24,

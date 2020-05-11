@@ -125,7 +125,7 @@ P9LOpen (
   }
 
   if (RxOpen->Header.Id != Rlopen) {
-    // TODO: Set Status
+    Status = P9Error (RxOpen, sizeof (P9RLOpen));
     goto Exit;
   }
 

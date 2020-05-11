@@ -124,7 +124,7 @@ P9Version (
   }
 
   if (RxVersion->Header.Id != Rversion) {
-    Status = EFI_UNSUPPORTED;
+    Status = P9Error (RxVersion, sizeof (RxVersionSize));
     goto Exit;
   }
 
