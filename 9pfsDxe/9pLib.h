@@ -111,6 +111,14 @@ P9GetAttr (
   );
 
 EFI_STATUS
+P9Walk (
+  IN P9_VOLUME          *Volume,
+  IN P9_IFILE           *IFile,
+  OUT P9_IFILE          *NewIFile,
+  IN CHAR16             *Path
+  );
+
+EFI_STATUS
 P9Clunk (
   IN P9_VOLUME          *Volume,
   IN P9_IFILE           *IFile

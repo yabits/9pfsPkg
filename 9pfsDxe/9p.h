@@ -127,6 +127,20 @@ typedef struct _P9RGetAttr {
   UINT64          DataVersion;
 } P9RGetAttr;
 
+typedef struct _P9TWalk {
+  P9Header        Header;
+  UINT32          Fid;
+  UINT32          NewFid;
+  UINT16          NWName;
+  P9String        WName[0];
+} P9TWalk;
+
+typedef struct _P9RWalk {
+  P9Header        Header;
+  UINT16          NWQid;
+  Qid             WQid[0];
+} P9RWalk;
+
 typedef struct _P9TClunk {
   P9Header        Header;
   UINT32          Fid;
@@ -148,6 +162,8 @@ enum {
   Rversion,
   Tattach   = 104,
   Rattach,
+  Twalk     = 110,
+  Rwalk,
   Tread     = 116,
   Rread,
   Tclunk    = 120,
