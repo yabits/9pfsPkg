@@ -8,6 +8,16 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "9pLib.h"
 
+UINT32 mFid = 1;
+
+UINT32
+GetFid (
+  VOID
+  )
+{
+  return mFid++;
+}
+
 EFI_STATUS
 TransmitTcp4 (
   IN EFI_TCP4_PROTOCOL  *Tcp4,

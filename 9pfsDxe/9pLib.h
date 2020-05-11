@@ -47,6 +47,11 @@ struct _P9_MESSAGE_PRIVATE_DATA {
   BOOLEAN                   IsRxDone;
 };
 
+UINT32
+GetFid (
+  VOID
+  );
+
 EFI_STATUS
 TransmitTcp4 (
   IN EFI_TCP4_PROTOCOL  *Tcp4,
