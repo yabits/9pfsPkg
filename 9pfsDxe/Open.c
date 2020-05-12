@@ -66,8 +66,13 @@ P9OpenEx (
   NewIFile->Fid        = GetFid ();
   NewIFile->Flags      = O_RDONLY; // Currently supports read only.
   CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
-  NewIFile->FileName   = AllocateZeroPool (StrLen (FileName) + 1);
-  StrCpyS (NewIFile->FileName, StrLen (FileName) + 1, FileName);
+  if (FileName[0] == L'\\') {
+    NewIFile->FileName   = AllocateZeroPool (StrLen (FileName));
+    StrCpyS (NewIFile->FileName, StrLen (FileName), FileName + 1);
+  } else {
+    NewIFile->FileName   = AllocateZeroPool (StrLen (FileName) + 1);
+    StrCpyS (NewIFile->FileName, StrLen (FileName) + 1, FileName);
+  }
 
   Status = P9Walk (Volume, IFile, NewIFile, FileName);
   if (EFI_ERROR (Status)) {

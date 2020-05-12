@@ -21,14 +21,17 @@ P9GetFileInfo (
   EFI_STATUS        Status;
   P9_IFILE          *IFile;
   P9_VOLUME         *Volume;
+  UINTN             Size;
 
   DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
 
   IFile = IFILE_FROM_FHAND (FHand);
   Volume = IFile->Volume;
 
-  if (*BufferSize < sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * (StrLen (IFile->FileName) + 1)) {
-    *BufferSize = sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * (StrLen (IFile->FileName) + 1);
+  Size = SIZE_OF_EFI_FILE_INFO + StrSize (IFile->FileName);
+
+  if (*BufferSize < Size) {
+    *BufferSize = Size;
     DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -39,8 +42,8 @@ P9GetFileInfo (
     goto Exit;
   }
 
-  Buffer = IFile->FileInfo;
-  *BufferSize = sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * (StrLen (IFile->FileName) + 1);
+  CopyMem (Buffer, IFile->FileInfo, Size);
+  *BufferSize = Size;
 
   Status = EFI_SUCCESS;
 

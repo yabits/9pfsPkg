@@ -113,6 +113,7 @@ P9GetAttr (
   EFI_TCP4_PROTOCOL             *Tcp4;
   P9TGetAttr                    *TxGetAttr;
   P9RGetAttr                    *RxGetAttr;
+  UINTN                         Size;
   EFI_FILE_INFO                 *FileInfo;
 
   Tcp4 = Volume->Tcp4;
@@ -198,15 +199,17 @@ P9GetAttr (
     goto Exit;
   }
 
-  FileInfo = IFile->FileInfo;
+  Size = SIZE_OF_EFI_FILE_INFO + StrSize (IFile->FileName);
 
-  if (FileInfo == NULL) {
-    FileInfo = AllocateZeroPool (sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * (StrLen (IFile->FileName) + 1));
-    if (FileInfo == NULL) {
+  if (IFile->FileInfo == NULL) {
+    IFile->FileInfo = AllocateZeroPool (Size);
+    if (IFile->FileInfo == NULL) {
       Status = EFI_OUT_OF_RESOURCES;
       goto Exit;
     }
   }
+
+  FileInfo = IFile->FileInfo;
 
   CopyMem (&IFile->Qid, &RxGetAttr->Qid, QID_SIZE);
   EpochToEfiTime (RxGetAttr->CTimeSec, &FileInfo->CreateTime);
@@ -215,10 +218,10 @@ P9GetAttr (
   FileInfo->CreateTime.Nanosecond        = (UINT32)RxGetAttr->CTimeNSec;
   FileInfo->ModificationTime.Nanosecond  = (UINT32)RxGetAttr->MTimeNSec;
   FileInfo->LastAccessTime.Nanosecond    = (UINT32)RxGetAttr->ATimeNSec;
-  FileInfo->Size                         = sizeof (EFI_FILE_INFO) + sizeof (CHAR16) * (StrLen (IFile->FileName) + 1);
+  FileInfo->Size                         = Size;
   FileInfo->FileSize                     = RxGetAttr->Size;
   FileInfo->PhysicalSize                 = BLK_UNIT * RxGetAttr->Blocks;
-  FileInfo->Attribute                    = S_ISDIR (RxGetAttr->Mode) ? EFI_FILE_DIRECTORY : 0;
+  FileInfo->Attribute                    = S_ISDIR (RxGetAttr->Mode) ? EFI_FILE_DIRECTORY : EFI_FILE_ARCHIVE;
   StrCpyS (FileInfo->FileName, StrLen (IFile->FileName) + 1, IFile->FileName);
 
   Status = EFI_SUCCESS;
