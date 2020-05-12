@@ -95,16 +95,29 @@ P9Read (
   EFI_STATUS        Status;
   P9_IFILE          *IFile;
   P9_VOLUME         *Volume;
+  UINT32            MaxRxSize;
+  UINT64            Position;
+  UINTN             Index;
+  UINTN             NReads;
+  UINT32            Count;
 
   DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
 
   IFile = IFILE_FROM_FHAND (FHand);
   Volume = IFile->Volume;
 
-  Status = P9LRead (Volume, IFile, (UINT32 *)BufferSize, Buffer);
-  if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
-    goto Exit;
+  MaxRxSize = P9_MSIZE - 24;
+  Position  = IFile->Position;
+  NReads    = (*BufferSize + (MaxRxSize - 1)) / MaxRxSize;
+  for (Index = 0; Index < NReads; Index++) {
+    Count = (Index < NReads - 1) ? MaxRxSize : (*BufferSize % MaxRxSize);
+    Status = P9LRead (Volume, IFile, (UINT32 *)&Count, Buffer);
+    if (EFI_ERROR (Status)) {
+      IFile->Position = Position;
+      DEBUG ((DEBUG_ERROR, "%a:%d: %r\n", __func__, __LINE__, Status));
+      goto Exit;
+    }
+    Buffer = (UINT8 *)Buffer + Count;
   }
 
   Status = EFI_SUCCESS;

@@ -136,6 +136,7 @@ P9LRead (
 
   CopyMem (Data, (VOID *)RxRead->Data, RxRead->Count);
   *Count = RxRead->Count;
+  IFile->Position += RxRead->Count;
 
   Status = EFI_SUCCESS;
 
