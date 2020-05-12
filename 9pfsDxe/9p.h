@@ -12,7 +12,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Uefi.h>
 
 #define P9_VERSION  "9P2000.L"
-#define P9_MSIZE    (UINT32)(0x2000)
+#define P9_MSIZE    (UINT32)(0x100)
 #define P9_NOTAG    (UINT16)(~0)
 #define P9_NOFID    (UINT32)(~0)
 
