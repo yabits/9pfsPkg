@@ -124,6 +124,14 @@ P9LRead (
   );
 
 EFI_STATUS
+P9LReadDir (
+  IN P9_VOLUME          *Volume,
+  IN OUT P9_IFILE       *IFile,
+  IN OUT UINT32         *Count,
+  OUT VOID              *Data
+  );
+
+EFI_STATUS
 P9Walk (
   IN P9_VOLUME          *Volume,
   IN P9_IFILE           *IFile,

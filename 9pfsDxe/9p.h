@@ -140,6 +140,19 @@ typedef struct _P9RRead {
   UINT8           Data[0];
 } P9RRead;
 
+typedef struct _P9TReadDir {
+  P9Header        Header;
+  UINT32          Fid;
+  UINT64          Offset;
+  UINT32          Count;
+} P9TReadDir;
+
+typedef struct _P9RReadDir {
+  P9Header        Header;
+  UINT32          Count;
+  UINT8           Data[0];
+} P9RReadDir;
+
 typedef struct _P9TWalk {
   P9Header        Header;
   UINT32          Fid;
@@ -171,6 +184,8 @@ enum {
   Rlopen,
   Tgetattr  = 24,
   Rgetattr,
+  Treaddir  = 40,
+  Rreaddir,
   Tversion  = 100,
   Rversion,
   Tattach   = 104,

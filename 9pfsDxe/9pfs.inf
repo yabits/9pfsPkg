@@ -53,6 +53,7 @@
   9pLibError.c
   9pLibClunk.c
   9pLibRead.c
+  9pLibReadDir.c
 
 [Packages]
   MdePkg/MdePkg.dec
