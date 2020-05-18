@@ -63,7 +63,6 @@ P9OpenEx (
 
   NewIFile->Signature  = P9_IFILE_SIGNATURE;
   NewIFile->Volume     = Volume;
-  NewIFile->Fid        = GetFid ();
   NewIFile->Flags      = O_RDONLY; // Currently supports read only.
   CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
   if (FileName[0] == L'\\') {
