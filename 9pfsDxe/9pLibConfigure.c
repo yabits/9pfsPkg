@@ -129,11 +129,11 @@ ConfigureP9 (
   }
 
 Done:
-  if (Tcp4Config != NULL) {
+  if (EFI_ERROR (Status) && Tcp4Config != NULL) {
     FreePool (Tcp4Config);
   }
 
-  if (ControlOption != NULL) {
+  if (EFI_ERROR (Status) && ControlOption != NULL) {
     FreePool (ControlOption);
   }
 
