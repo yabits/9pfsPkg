@@ -48,6 +48,10 @@ P9LRead (
   P9TRead                       *TxRead;
   P9RRead                       *RxRead;
   UINTN                         RxReadSize;
+  VOID                          *CurrentRxRead;
+  INTN                          CurrentRxReadSize;
+  UINT32                        CurrentDataLength;
+  BOOLEAN                       HasMoreData;
 
   Tcp4 = Volume->Tcp4;
 
@@ -114,19 +118,33 @@ P9LRead (
     goto Exit;
   }
 
-  Read->IsRxDone = FALSE;
-  Status = ReceiveTcp4 (
-      Tcp4,
-      &Read->RxIoToken,
-      RxRead,
-      RxReadSize
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
+  CurrentRxRead = RxRead;
+  CurrentRxReadSize = *Count;
+  HasMoreData = TRUE;
+  while (HasMoreData == TRUE) {
+    Read->IsRxDone = FALSE;
+    Status = ReceiveTcp4 (
+        Tcp4,
+        &Read->RxIoToken,
+        CurrentRxRead,
+        P9_MSIZE
+        );
+    if (EFI_ERROR (Status)) {
+      DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
+      goto Exit;
+    }
 
-  while (!Read->IsRxDone) {
-    Tcp4->Poll (Tcp4);
+    while (!Read->IsRxDone) {
+      Tcp4->Poll (Tcp4);
+    }
+    CurrentDataLength = Read->RxIoToken.Packet.RxData->DataLength;
+    CurrentRxRead = (UINT8 *)CurrentRxRead + CurrentDataLength;
+    if (CurrentDataLength < CurrentRxReadSize) {
+      HasMoreData = TRUE;
+      CurrentRxReadSize -= CurrentDataLength;
+    } else {
+      HasMoreData = FALSE;
+    }
   }
 
   if (RxRead->Header.Id != Rread) {
