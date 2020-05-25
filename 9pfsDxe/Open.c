@@ -75,11 +75,13 @@ P9OpenEx (
 
   Status = P9Walk (Volume, IFile, NewIFile, FileName);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_INFO, "%a:%d %r\n", __func__, __LINE__, Status));
     goto Exit;
   }
 
   Status = P9LOpen (Volume, NewIFile);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_INFO, "%a:%d %r\n", __func__, __LINE__, Status));
     goto Exit;
   }
 
