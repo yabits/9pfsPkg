@@ -107,6 +107,8 @@ ConfigureP9 (
     goto Done;
   }
 
+  ControlOption->SendBufferSize = P9_MSIZE;
+  ControlOption->ReceiveBufferSize = P9_MSIZE;
   Tcp4Config->TypeOfService = 0;
   Tcp4Config->TimeToLive = 255;
   Tcp4Config->AccessPoint.UseDefaultAddress = FALSE;
