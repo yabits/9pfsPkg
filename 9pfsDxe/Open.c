@@ -65,6 +65,10 @@ P9OpenEx (
   NewIFile->Volume     = Volume;
   NewIFile->Flags      = O_RDONLY; // Currently supports read only.
   CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
+  if (FileName == NULL) {
+    FileName = AllocateZeroPool (sizeof (CHAR16) * 1);
+    FileName[0] = L'\0';
+  }
   if (FileName[0] == L'\\') {
     NewIFile->FileName   = AllocateZeroPool (StrLen (FileName));
     StrCpyS (NewIFile->FileName, StrLen (FileName), FileName + 1);

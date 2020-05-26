@@ -80,7 +80,11 @@ DoP9Walk (
     goto Exit;
   }
 
-  PathSize = StrLen (Path);
+  if (Path == NULL) {
+    PathSize = 0;
+  } else {
+    PathSize = StrLen (Path);
+  }
   TxWalkSize = sizeof (P9TWalk) + sizeof (P9String) * 1 + sizeof (CHAR8) * PathSize;
 
   TxWalk = AllocateZeroPool (TxWalkSize);
@@ -89,14 +93,14 @@ DoP9Walk (
     goto Exit;
   }
 
-  TxWalk->Header.Size = TxWalkSize;
-  TxWalk->Header.Id   = Twalk;
-  TxWalk->Header.Tag  = Tag;
-  TxWalk->Fid         = Fid;
-  TxWalk->NewFid      = NewFid;
-  TxWalk->NWName      = 1;
+  TxWalk->Header.Size   = TxWalkSize;
+  TxWalk->Header.Id     = Twalk;
+  TxWalk->Header.Tag    = Tag;
+  TxWalk->Fid           = Fid;
+  TxWalk->NewFid        = NewFid;
+  TxWalk->NWName        = 1;
   TxWalk->WName[0].Size = PathSize;
-  UnicodeStrToAsciiStrS (Path, TxWalk->WName[0].String, TxWalk->WName[0].Size + 1);
+  UnicodeStrToAsciiStrS (Path, TxWalk->WName[0].String, PathSize + 1);
 
   Walk->IsTxDone = FALSE;
   Status = TransmitTcp4 (
