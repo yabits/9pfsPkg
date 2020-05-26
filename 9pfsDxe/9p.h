@@ -49,6 +49,13 @@ typedef struct _P9String {
   CHAR8   String[0];
 } P9String;
 
+typedef struct _P9DirEnt {
+  Qid       Qid;
+  UINT64    Offset;
+  UINT8     Type;
+  P9String  Name;
+} P9DirEnt;
+
 typedef struct _P9Header {
   UINT32  Size;
   UINT8   Id;

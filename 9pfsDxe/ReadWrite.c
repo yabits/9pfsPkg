@@ -71,7 +71,7 @@ P9SetPosition (
 
 /**
 
-  Get the file info.
+  Read the directory.
 
   @param  FHand                 - The handle of the file.
   @param  BufferSize            - Size of Buffer.
@@ -85,8 +85,7 @@ P9SetPosition (
 
 **/
 EFI_STATUS
-EFIAPI
-P9Read (
+P9FileRead (
   IN     EFI_FILE_PROTOCOL  *FHand,
   IN OUT UINTN              *BufferSize,
      OUT VOID               *Buffer
@@ -125,6 +124,140 @@ P9Read (
 Exit:
   DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
   return Status;
+}
+
+/**
+
+  Read the directory.
+
+  @param  FHand                 - The handle of the file.
+  @param  BufferSize            - Size of Buffer.
+  @param  Buffer                - Buffer containing read data.
+
+
+  @retval EFI_SUCCESS           - Get the file info successfully.
+  @retval EFI_DEVICE_ERROR      - Can not find the OFile for the file.
+  @retval EFI_VOLUME_CORRUPTED  - The file type of open file is error.
+  @return other                 - An error occurred when operation the disk.
+
+**/
+EFI_STATUS
+P9DirRead (
+  IN     EFI_FILE_PROTOCOL  *FHand,
+  IN OUT UINTN              *BufferSize,
+     OUT VOID               *Buffer
+  )
+{
+  EFI_STATUS        Status;
+  P9_IFILE          *IFile;
+  P9_VOLUME         *Volume;
+  UINT32            Count;
+  UINT32            NameLength;
+  UINT32            DirEntSize;
+  P9DirEnt          *DirEnt;
+  UINTN             Size;
+  UINTN             NameSize;
+  P9_IFILE          *NewIFile;
+  CHAR16            *Path;
+
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
+
+  IFile = IFILE_FROM_FHAND (FHand);
+  Volume = IFile->Volume;
+
+  NameLength = 255;
+  DirEntSize = sizeof (P9DirEnt) + sizeof (CHAR8) * NameLength;
+  DirEnt = AllocateZeroPool (DirEntSize);
+  if (DirEnt == NULL) {
+    Status = EFI_OUT_OF_RESOURCES;
+    goto Exit;
+  }
+  Status = P9LOpen (Volume, IFile);
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+  Count = DirEntSize;
+  Status = P9LReadDir (Volume, IFile, IFile->Position, &Count, DirEnt);
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+  // Reached EOF
+  if (Count == 0) {
+    Status = EFI_DEVICE_ERROR;
+    goto Exit;
+  }
+
+  NameSize = sizeof (CHAR16) * (DirEnt->Name.Size + 1);
+  Size = SIZE_OF_EFI_FILE_INFO + NameSize;
+  if (*BufferSize < Size) {
+    *BufferSize = Size;
+    Status = EFI_BUFFER_TOO_SMALL;
+    goto Exit;
+  }
+  Path = AllocateZeroPool (NameSize);
+  if (Path == NULL) {
+    Status = EFI_OUT_OF_RESOURCES;
+    goto Exit;
+  }
+  AsciiStrToUnicodeStrS (DirEnt->Name.String, Path, NameSize);
+  Status = P9Walk (Volume, IFile, NewIFile, Path);
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+  Status = P9GetAttr (Volume, NewIFile);
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+  CopyMem (Buffer, NewIFile->FileInfo, Size);
+  *BufferSize = Size;
+  IFile->Position = DirEnt->Offset;
+
+  Status = EFI_SUCCESS;
+
+Exit:
+  if (DirEnt != NULL) {
+    FreePool (DirEnt);
+  }
+  if (Path != NULL) {
+    FreePool (Path);
+  }
+  DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
+  return Status;
+}
+
+/**
+
+  Read the file.
+
+  @param  FHand                 - The handle of the file.
+  @param  BufferSize            - Size of Buffer.
+  @param  Buffer                - Buffer containing read data.
+
+
+  @retval EFI_SUCCESS           - Get the file info successfully.
+  @retval EFI_DEVICE_ERROR      - Can not find the OFile for the file.
+  @retval EFI_VOLUME_CORRUPTED  - The file type of open file is error.
+  @return other                 - An error occurred when operation the disk.
+
+**/
+EFI_STATUS
+EFIAPI
+P9Read (
+  IN     EFI_FILE_PROTOCOL  *FHand,
+  IN OUT UINTN              *BufferSize,
+     OUT VOID               *Buffer
+  )
+{
+  P9_IFILE          *IFile;
+
+  IFile = IFILE_FROM_FHAND (FHand);
+
+  // File type is directory
+  if (IFile->Qid.Type & 0x80) {
+    return P9DirRead (FHand, BufferSize, Buffer);
+  } else {
+    return P9FileRead (FHand, BufferSize, Buffer);
+  }
 }
 
 /**

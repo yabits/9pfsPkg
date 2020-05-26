@@ -38,6 +38,7 @@ EFI_STATUS
 P9LReadDir (
   IN P9_VOLUME          *Volume,
   IN OUT P9_IFILE       *IFile,
+  IN UINT64             Offset,
   IN OUT UINT32         *Count,
   OUT VOID              *Data
   )
@@ -89,7 +90,7 @@ P9LReadDir (
   TxReadDir->Header.Id   = Treaddir;
   TxReadDir->Header.Tag  = Volume->Tag;
   TxReadDir->Fid         = IFile->Fid;
-  TxReadDir->Offset      = IFile->Position;
+  TxReadDir->Offset      = Offset;
   TxReadDir->Count       = *Count;
 
   ReadDir->IsTxDone = FALSE;
@@ -136,7 +137,6 @@ P9LReadDir (
 
   CopyMem (Data, (VOID *)RxReadDir->Data, RxReadDir->Count);
   *Count = RxReadDir->Count;
-  IFile->Position += RxReadDir->Count;
 
   Status = EFI_SUCCESS;
 

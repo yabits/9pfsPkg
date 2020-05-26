@@ -127,6 +127,7 @@ EFI_STATUS
 P9LReadDir (
   IN P9_VOLUME          *Volume,
   IN OUT P9_IFILE       *IFile,
+  IN UINT64             Offset,
   IN OUT UINT32         *Count,
   OUT VOID              *Data
   );
