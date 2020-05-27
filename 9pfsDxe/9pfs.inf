@@ -54,6 +54,7 @@
   9pLibClunk.c
   9pLibRead.c
   9pLibReadDir.c
+  9pLibReadLink.c
 
 [Packages]
   MdePkg/MdePkg.dec

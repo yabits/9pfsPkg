@@ -52,6 +52,7 @@ typedef struct {
   Qid                             Qid;
   UINT32                          IoUnit;
   UINT64                          Position;
+  CHAR16                          *SymLinkTarget;
 } P9_IFILE;
 
 struct _P9_VOLUME {

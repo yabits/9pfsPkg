@@ -71,7 +71,7 @@ P9SetPosition (
 
 /**
 
-  Read the directory.
+  Read the file.
 
   @param  FHand                 - The handle of the file.
   @param  BufferSize            - Size of Buffer.
@@ -227,6 +227,60 @@ Exit:
 
 /**
 
+  Read the symbolic link.
+
+  @param  FHand                 - The handle of the file.
+  @param  BufferSize            - Size of Buffer.
+  @param  Buffer                - Buffer containing read data.
+
+
+  @retval EFI_SUCCESS           - Get the file info successfully.
+  @retval EFI_DEVICE_ERROR      - Can not find the OFile for the file.
+  @retval EFI_VOLUME_CORRUPTED  - The file type of open file is error.
+  @return other                 - An error occurred when operation the disk.
+
+**/
+EFI_STATUS
+P9SymLinkRead (
+  IN     EFI_FILE_PROTOCOL  *FHand,
+  IN OUT UINTN              *BufferSize,
+     OUT VOID               *Buffer
+  )
+{
+  EFI_STATUS        Status;
+  P9_IFILE          *IFile;
+  P9_VOLUME         *Volume;
+  UINTN             PathSize;
+
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
+
+  IFile = IFILE_FROM_FHAND (FHand);
+  Volume = IFile->Volume;
+
+  Status = P9LReadLink (Volume, IFile);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d: %r\n", __func__, __LINE__, Status));
+    goto Exit;
+  }
+  DEBUG ((DEBUG_INFO, "%a:%d: TargetPath: %s\n", __func__, __LINE__, IFile->SymLinkTarget));
+
+  PathSize = StrSize (IFile->SymLinkTarget);
+  if (*BufferSize < PathSize) {
+    *BufferSize = PathSize;
+    Status = EFI_BUFFER_TOO_SMALL;
+    goto Exit;
+  }
+  StrCpyS (Buffer, *BufferSize / sizeof (CHAR16), IFile->SymLinkTarget);
+
+  Status = EFI_SUCCESS;
+
+Exit:
+  DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
+  return Status;
+}
+
+/**
+
   Read the file.
 
   @param  FHand                 - The handle of the file.
@@ -252,9 +306,10 @@ P9Read (
 
   IFile = IFILE_FROM_FHAND (FHand);
 
-  // File type is directory
-  if (IFile->Qid.Type & 0x80) {
+  if (IFile->Qid.Type & QTDir) {
     return P9DirRead (FHand, BufferSize, Buffer);
+  } else if (IFile->Qid.Type & QTSymLink) {
+    return P9SymLinkRead (FHand, BufferSize, Buffer);
   } else {
     return P9FileRead (FHand, BufferSize, Buffer);
   }

@@ -76,6 +76,7 @@ P9OpenEx (
     NewIFile->FileName   = AllocateZeroPool (StrLen (FileName) + 1);
     StrCpyS (NewIFile->FileName, StrLen (FileName) + 1, FileName);
   }
+  NewIFile->SymLinkTarget = AllocateZeroPool (sizeof (CHAR16) * (P9_MAX_PATH + 1));
 
   Status = P9Walk (Volume, IFile, NewIFile, FileName);
   if (EFI_ERROR (Status)) {

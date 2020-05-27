@@ -133,6 +133,12 @@ P9LReadDir (
   );
 
 EFI_STATUS
+P9LReadLink (
+  IN P9_VOLUME          *Volume,
+  IN OUT P9_IFILE       *IFile
+  );
+
+EFI_STATUS
 P9Walk (
   IN P9_VOLUME          *Volume,
   IN P9_IFILE           *IFile,

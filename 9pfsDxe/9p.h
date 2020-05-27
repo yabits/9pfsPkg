@@ -15,6 +15,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define P9_MSIZE    (UINT32)(0x10000)
 #define P9_NOTAG    (UINT16)(~0)
 #define P9_NOFID    (UINT32)(~0)
+#define P9_MAX_PATH (UINT16)(4096)
 
 #define QID_SIZE    (UINTN)(13)
 
@@ -160,6 +161,16 @@ typedef struct _P9RReadDir {
   UINT8           Data[0];
 } P9RReadDir;
 
+typedef struct _P9TReadLink {
+  P9Header        Header;
+  UINT32          Fid;
+} P9TReadLink;
+
+typedef struct _P9RReadLink {
+  P9Header        Header;
+  P9String        Target;
+} P9RReadLink;
+
 typedef struct _P9TWalk {
   P9Header        Header;
   UINT32          Fid;
@@ -189,6 +200,8 @@ enum {
   Rlerror,
   Tlopen    = 12,
   Rlopen,
+  Treadlink = 22,
+  Rreadlink,
   Tgetattr  = 24,
   Rgetattr,
   Treaddir  = 40,
@@ -203,5 +216,17 @@ enum {
   Rread,
   Tclunk    = 120,
   Rclunk,
+};
+
+enum {
+  QTDir     = 0x80,
+  QTAppend  = 0x40,
+  QTExcl    = 0x20,
+  QTMount   = 0x10,
+  QTAuth    = 0x08,
+  QTTmp     = 0x04,
+  QTSymLink = 0x02,
+  QTLink    = 0x01,
+  QTFile    = 0x00,
 };
 #endif
