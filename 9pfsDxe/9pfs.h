@@ -2,6 +2,7 @@
   Main header file for EFI 9P file system driver.
 
 Copyright (c) 2005 - 2013, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2020, Akira Moroo. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/

@@ -1,7 +1,7 @@
 /** @file
   Main header file for 9P library.
 
-Copyright (c) 2005 - 2013, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2020, Akira Moroo. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/

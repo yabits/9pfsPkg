@@ -2,6 +2,7 @@
   9P File System driver routines that support EFI driver model.
 
 Copyright (c) 2005 - 2014, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2020, Akira Moroo. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
