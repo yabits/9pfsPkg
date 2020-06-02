@@ -9,6 +9,16 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "9pfs.h"
 
+VOID
+EFIAPI
+CloseCallback (
+  IN EFI_EVENT  Event,
+  IN VOID       *Context
+  )
+{
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
+}
+
 /**
 
   Register Driver Binding protocol for this driver.
@@ -175,7 +185,99 @@ P9Unload (
   IN EFI_HANDLE         ImageHandle
   )
 {
-  return EFI_SUCCESS;
+  EFI_STATUS  Status;
+  EFI_HANDLE  *DeviceHandleBuffer;
+  UINTN       DeviceHandleCount;
+  UINTN       Index;
+  VOID        *ComponentName;
+  VOID        *ComponentName2;
+
+  Status = gBS->LocateHandleBuffer (
+    AllHandles,
+    NULL,
+    NULL,
+    &DeviceHandleCount,
+    &DeviceHandleBuffer
+    );
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
+
+  for (Index = 0; Index < DeviceHandleCount; Index++) {
+    Status = EfiTestManagedDevice (DeviceHandleBuffer[Index], ImageHandle, &gEfiTcp4ProtocolGuid);
+    if (!EFI_ERROR (Status)) {
+      Status = gBS->DisconnectController (
+        DeviceHandleBuffer[Index],
+        ImageHandle,
+        NULL
+        );
+      if (EFI_ERROR (Status)) {
+        break;
+      }
+    }
+  }
+
+  if (Index == DeviceHandleCount) {
+    //
+    // Driver is stopped successfully.
+    //
+    Status = gBS->HandleProtocol (ImageHandle, &gEfiComponentNameProtocolGuid, &ComponentName);
+    if (EFI_ERROR (Status)) {
+      ComponentName = NULL;
+    }
+
+    Status = gBS->HandleProtocol (ImageHandle, &gEfiComponentName2ProtocolGuid, &ComponentName2);
+    if (EFI_ERROR (Status)) {
+      ComponentName2 = NULL;
+    }
+
+    if (ComponentName == NULL) {
+      if (ComponentName2 == NULL) {
+        Status = gBS->UninstallMultipleProtocolInterfaces (
+          ImageHandle,
+          &gEfiDriverBindingProtocolGuid,
+          &g9pfsDriverBinding,
+          NULL
+          );
+      } else {
+        Status = gBS->UninstallMultipleProtocolInterfaces (
+          ImageHandle,
+          &gEfiDriverConfiguration2ProtocolGuid,
+          &g9pfsDriverBinding,
+          &gEfiComponentName2ProtocolGuid,
+          ComponentName2,
+          NULL
+          );
+      }
+    } else {
+      if (ComponentName2 == NULL) {
+        Status = gBS->UninstallMultipleProtocolInterfaces (
+          ImageHandle,
+          &gEfiDriverBindingProtocolGuid,
+          &g9pfsDriverBinding,
+          &gEfiComponentNameProtocolGuid, ComponentName,
+          NULL
+          );
+      } else {
+        Status = gBS->UninstallMultipleProtocolInterfaces (
+          ImageHandle,
+          &gEfiDriverBindingProtocolGuid,
+          &g9pfsDriverBinding,
+          &gEfiComponentNameProtocolGuid,
+          ComponentName,
+          &gEfiComponentName2ProtocolGuid,
+          ComponentName2,
+          NULL
+          );
+      }
+    }
+  }
+
+  if (DeviceHandleBuffer != NULL) {
+    FreePool (DeviceHandleBuffer);
+  }
+
+  return Status;
 }
 
 /**
@@ -337,5 +439,61 @@ P9DriverBindingStop (
   IN  EFI_HANDLE                    *ChildHandleBuffer
   )
 {
+  EFI_STATUS                      Status;
+  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
+  P9_VOLUME                       *Volume;
+  EFI_TCP4_PROTOCOL               *Tcp4;
+  EFI_TCP4_CLOSE_TOKEN            *CloseToken;
+
+  Tcp4 = NULL;
+  //
+  // Get our context back
+  //
+  Status = gBS->OpenProtocol (
+    ControllerHandle,
+    &gEfiSimpleFileSystemProtocolGuid,
+    (VOID **)&FileSystem,
+    This->DriverBindingHandle,
+    ControllerHandle,
+    EFI_OPEN_PROTOCOL_GET_PROTOCOL
+  );
+
+  if (!EFI_ERROR (Status)) {
+    Volume = VOLUME_FROM_VOL_INTERFACE (FileSystem);
+    Tcp4 = Volume->Tcp4;
+    if (Volume->Handle != NULL) {
+      Status = gBS->UninstallMultipleProtocolInterfaces (
+        Volume->Handle,
+        &gEfiSimpleFileSystemProtocolGuid,
+        &Volume->VolumeInterface,
+        NULL
+        );
+    }
+  }
+
+  if (!EFI_ERROR (Status)) {
+    if (Tcp4 != NULL) {
+      CloseToken = AllocateZeroPool (sizeof (EFI_TCP4_CLOSE_TOKEN));
+      CloseToken->AbortOnClose = TRUE;
+      Status = gBS->CreateEvent (
+        EVT_NOTIFY_SIGNAL,
+        TPL_CALLBACK,
+        CloseCallback,
+        CloseToken,
+        &CloseToken->CompletionToken.Event
+        );
+      ASSERT_EFI_ERROR (Status);
+      Status = Tcp4->Close (Tcp4, CloseToken);
+      ASSERT_EFI_ERROR (Status);
+      Status = gBS->CloseProtocol (
+        ControllerHandle,
+        &gEfiTcp4ProtocolGuid,
+        This->DriverBindingHandle,
+        ControllerHandle
+        );
+      ASSERT_EFI_ERROR (Status);
+    }
+  }
+
   return EFI_SUCCESS;
 }
