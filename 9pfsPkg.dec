@@ -14,3 +14,7 @@
   PACKAGE_UNI_FILE               = 9pfsPkg.uni
   PACKAGE_GUID                   = ec728e4d-fd2d-47bd-ba04-4dd713b3b784
   PACKAGE_VERSION                = 0.1
+
+[Guids]
+
+  g9pfsGuid                      = { 0xa10e4a8f, 0xed0a, 0x4eed, { 0x85, 0xee, 0x21, 0x6a, 0x9d, 0x3f, 0x09, 0x2e }}

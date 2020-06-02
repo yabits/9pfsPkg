@@ -31,13 +31,48 @@ P9OpenVolume (
   EFI_STATUS                Status;
   P9_VOLUME                 *Volume;
   P9_IFILE                  *IFile;
+  CHAR16                    *StationAddrStr;
+  CHAR16                    *SubnetMaskStr;
+  CHAR16                    *RemoteAddrStr;
+  CHAR8                     *AsciiUNameStr;
+  CHAR8                     *AsciiANameStr;
 
   DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
 
   Volume  = VOLUME_FROM_VOL_INTERFACE (This);
   IFile   = NULL;
 
-  Status = ConfigureP9 (Volume, L"10.0.2.2:564", L"255.255.255.0", L"10.0.2.100:564");
+  Status = GetVariable2 (L"StationAddr", &g9pfsGuid, (VOID **)&StationAddrStr, NULL);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
+    goto Exit;
+  }
+
+  Status = GetVariable2 (L"SubnetMask", &g9pfsGuid, (VOID **)&SubnetMaskStr, NULL);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
+    goto Exit;
+  }
+
+  Status = GetVariable2 (L"RemoteAddr", &g9pfsGuid, (VOID **)&RemoteAddrStr, NULL);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
+    goto Exit;
+  }
+
+  Status = GetVariable2 (L"UName", &g9pfsGuid, (VOID **)&AsciiUNameStr, NULL);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
+    goto Exit;
+  }
+
+  Status = GetVariable2 (L"AName", &g9pfsGuid, (VOID **)&AsciiANameStr, NULL);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
+    goto Exit;
+  }
+
+  Status = ConfigureP9 (Volume, StationAddrStr, SubnetMaskStr, RemoteAddrStr);
   if (Status == EFI_ALREADY_STARTED) {
     DEBUG ((DEBUG_INFO, "9P volume is already configured.\n"));
     *File = &Volume->Root->Handle;
@@ -80,7 +115,7 @@ P9OpenVolume (
   IFile->FileName   = L"";
   CopyMem (&IFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
 
-  Status = P9Attach (Volume, IFile->Fid, P9_NOFID, "root", "/tmp/9", IFile);
+  Status = P9Attach (Volume, IFile->Fid, P9_NOFID, AsciiUNameStr, AsciiANameStr, IFile);
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a:%d\n", __func__, __LINE__));
     goto Exit;

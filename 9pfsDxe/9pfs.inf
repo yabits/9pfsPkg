@@ -58,6 +58,7 @@
 
 [Packages]
   MdePkg/MdePkg.dec
+  9pfsPkg/9pfsPkg.dec
 
 [LibraryClasses]
   UefiRuntimeServicesTableLib
@@ -74,6 +75,7 @@
   gEfiFileInfoGuid                      ## SOMETIMES_CONSUMES   ## UNDEFINED
   gEfiFileSystemInfoGuid                ## SOMETIMES_CONSUMES   ## UNDEFINED
   gEfiFileSystemVolumeLabelInfoIdGuid   ## SOMETIMES_CONSUMES   ## UNDEFINED
+  g9pfsGuid                             ## PRODUCES
 
 [Protocols]
   gEfiSimpleFileSystemProtocolGuid      ## BY_START
