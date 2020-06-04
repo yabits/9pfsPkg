@@ -54,6 +54,7 @@ typedef struct {
   UINT32                          IoUnit;
   UINT64                          Position;
   CHAR16                          *SymLinkTarget;
+  BOOLEAN                         IsOpened;
 } P9_IFILE;
 
 struct _P9_VOLUME {

@@ -11,6 +11,12 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include "9pfs.h"
 #include "9pLib.h"
 
+/* open-only flags */
+#define	O_RDONLY	0x0000		/* open for reading only */
+#define	O_WRONLY	0x0001		/* open for writing only */
+#define	O_RDWR		0x0002		/* open for reading and writing */
+#define	O_ACCMODE	0x0003		/* mask for above modes */
+
 /**
 
   Get the file's position of the file.
@@ -171,20 +177,27 @@ P9DirRead (
   DirEnt = AllocateZeroPool (DirEntSize);
   if (DirEnt == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
+    DEBUG ((DEBUG_ERROR, "%a:%d: %r\n", __func__, __LINE__, Status));
     goto Exit;
   }
-  Status = P9LOpen (Volume, IFile);
-  if (EFI_ERROR (Status)) {
-    goto Exit;
+  if (IFile->IsOpened != TRUE) {
+    Status = P9LOpen (Volume, IFile);
+    if (EFI_ERROR (Status)) {
+      DEBUG ((DEBUG_ERROR, "%a:%d: %r\n", __func__, __LINE__, Status));
+      goto Exit;
+    }
+    IFile->IsOpened = TRUE;
   }
   Count = DirEntSize;
   Status = P9LReadDir (Volume, IFile, IFile->Position, &Count, DirEnt);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d: %r\n", __func__, __LINE__, Status));
     goto Exit;
   }
   // Reached EOF
   if (Count == 0) {
-    Status = EFI_DEVICE_ERROR;
+    *BufferSize = 0;
+    Status = EFI_SUCCESS;
     goto Exit;
   }
 
@@ -193,20 +206,37 @@ P9DirRead (
   if (*BufferSize < Size) {
     *BufferSize = Size;
     Status = EFI_BUFFER_TOO_SMALL;
+    DEBUG ((DEBUG_ERROR, "%a:%d: %r\n", __func__, __LINE__, Status));
     goto Exit;
   }
   Path = AllocateZeroPool (NameSize);
   if (Path == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
+    DEBUG ((DEBUG_ERROR, "%a:%d: %r\n", __func__, __LINE__, Status));
     goto Exit;
   }
   AsciiStrToUnicodeStrS (DirEnt->Name.String, Path, NameSize);
+  NewIFile = AllocateZeroPool (sizeof (P9_IFILE));
+  if (NewIFile == NULL) {
+    Status = EFI_OUT_OF_RESOURCES;
+    goto Exit;
+  }
+
+  NewIFile->Signature  = P9_IFILE_SIGNATURE;
+  NewIFile->Volume     = Volume;
+  NewIFile->Flags      = O_RDONLY; // Currently supports read only.
+  NewIFile->IsOpened   = FALSE;
+  NewIFile->FileName   = Path;
+  CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
+
   Status = P9Walk (Volume, IFile, NewIFile, Path);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d: %r\n", __func__, __LINE__, Status));
     goto Exit;
   }
   Status = P9GetAttr (Volume, NewIFile);
   if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%d: %r\n", __func__, __LINE__, Status));
     goto Exit;
   }
   CopyMem (Buffer, NewIFile->FileInfo, Size);
@@ -216,12 +246,16 @@ P9DirRead (
   Status = EFI_SUCCESS;
 
 Exit:
+  if (NewIFile != NULL) {
+    FreePool (NewIFile);
+  }
   if (DirEnt != NULL) {
     FreePool (DirEnt);
   }
   if (Path != NULL) {
     FreePool (Path);
   }
+
   DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
   return Status;
 }

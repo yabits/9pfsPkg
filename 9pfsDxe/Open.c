@@ -65,6 +65,7 @@ P9OpenEx (
   NewIFile->Signature  = P9_IFILE_SIGNATURE;
   NewIFile->Volume     = Volume;
   NewIFile->Flags      = O_RDONLY; // Currently supports read only.
+  NewIFile->IsOpened   = FALSE;
   CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
   if (FileName == NULL) {
     FileName = AllocateZeroPool (sizeof (CHAR16) * 1);
@@ -91,6 +92,7 @@ P9OpenEx (
     goto Exit;
   }
 
+  NewIFile->IsOpened = TRUE;
   *NewHandle = &NewIFile->Handle;
 
   return EFI_SUCCESS;
