@@ -33,6 +33,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 //
 // The 9P file system signature
 //
+#define P9_VOLUME_LABEL             L"9PFS"
 #define P9_VOLUME_SIGNATURE         SIGNATURE_32 ('9', 'f', 's', 'v')
 #define P9_IFILE_SIGNATURE          SIGNATURE_32 ('9', 'f', 's', 'i')
 
@@ -66,6 +67,7 @@ struct _P9_VOLUME {
   BOOLEAN                         IsConfigured;
   UINT32                          MSize;
   UINT16                          Tag;
+  EFI_FILE_SYSTEM_INFO            *FileSystemInfo;
 };
 
 //

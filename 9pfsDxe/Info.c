@@ -53,6 +53,46 @@ Exit:
   return Status;
 }
 
+EFI_STATUS
+P9GetFileSystemInfo (
+  IN     EFI_FILE_PROTOCOL   *FHand,
+  IN OUT UINTN               *BufferSize,
+     OUT VOID                *Buffer
+  )
+{
+  EFI_STATUS        Status;
+  P9_IFILE          *IFile;
+  P9_VOLUME         *Volume;
+  UINTN             Size;
+
+  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
+
+  IFile = IFILE_FROM_FHAND (FHand);
+  Volume = IFile->Volume;
+
+  Status = P9Statfs (Volume);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
+    goto Exit;
+  }
+
+  Size = Volume->FileSystemInfo->Size;
+  if (*BufferSize < Size) {
+    *BufferSize = Size;
+    DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
+    return EFI_BUFFER_TOO_SMALL;
+  }
+
+  CopyMem (Buffer, Volume->FileSystemInfo, Size);
+  *BufferSize = Size;
+
+  Status = EFI_SUCCESS;
+
+Exit:
+  DEBUG ((DEBUG_INFO, "%a:%d: %r\n", __func__, __LINE__, Status));
+  return Status;
+}
+
 /**
 
   Get the some types info of the file into Buffer.
@@ -77,6 +117,8 @@ P9GetInfo (
 {
   if (CompareGuid (Type, &gEfiFileInfoGuid)) {
     return P9GetFileInfo (FHand, BufferSize, Buffer);
+  } else if (CompareGuid (Type, &gEfiFileSystemInfoGuid)) {
+    return P9GetFileSystemInfo (FHand, BufferSize, Buffer);
   }
 
   DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));

@@ -104,6 +104,11 @@ P9Attach (
   );
 
 EFI_STATUS
+P9Statfs (
+  IN  P9_VOLUME         *Volume
+  );
+
+EFI_STATUS
 P9LOpen (
   IN P9_VOLUME          *Volume,
   IN OUT P9_IFILE       *IFile

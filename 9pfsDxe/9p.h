@@ -93,6 +93,24 @@ typedef struct _P9RAttach {
   Qid             Qid;
 } P9RAttach;
 
+typedef struct _P9TStatfs {
+  P9Header        Header;
+  UINT32          Fid;
+} P9TStatfs;
+
+typedef struct _P9RStatfs {
+  P9Header        Header;
+  UINT32          Type;
+  UINT32          BSize;
+  UINT64          Blocks;
+  UINT64          BFree;
+  UINT64          BAvail;
+  UINT64          Files;
+  UINT64          FFree;
+  UINT64          Fsid;
+  UINT16          NameLen;
+} P9RStatfs;
+
 typedef struct _P9TLOpen {
   P9Header        Header;
   UINT32          Fid;
@@ -198,6 +216,8 @@ typedef struct _P9RClunk {
 enum {
   Tlerror   = 6,
   Rlerror,
+  Tstatfs   = 8,
+  Rstatfs,
   Tlopen    = 12,
   Rlopen,
   Treadlink = 22,
