@@ -19,6 +19,7 @@ TxAttachCallback (
 
   Attach = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Attach->IsTxDone = TRUE;
+  gBS->CloseEvent (Attach->TxIoToken.CompletionToken.Event);
 }
 
 VOID
@@ -32,6 +33,7 @@ RxAttachCallback (
 
   Attach = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Attach->IsRxDone = TRUE;
+  gBS->CloseEvent (Attach->RxIoToken.CompletionToken.Event);
 }
 
 EFI_STATUS

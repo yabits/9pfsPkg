@@ -19,6 +19,7 @@ TxOpenCallback (
 
   Open = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Open->IsTxDone = TRUE;
+  gBS->CloseEvent (Open->TxIoToken.CompletionToken.Event);
 }
 
 VOID
@@ -32,6 +33,7 @@ RxOpenCallback (
 
   Open = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Open->IsRxDone = TRUE;
+  gBS->CloseEvent (Open->RxIoToken.CompletionToken.Event);
 }
 
 EFI_STATUS

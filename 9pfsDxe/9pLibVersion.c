@@ -19,6 +19,7 @@ TxVersionCallback (
 
   Version = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Version->IsTxDone = TRUE;
+  gBS->CloseEvent (Version->TxIoToken.CompletionToken.Event);
 }
 
 VOID
@@ -32,6 +33,7 @@ RxVersionCallback (
 
   Version = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Version->IsRxDone = TRUE;
+  gBS->CloseEvent (Version->RxIoToken.CompletionToken.Event);
 }
 
 EFI_STATUS

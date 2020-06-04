@@ -19,6 +19,7 @@ TxReadCallback (
 
   Read = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Read->IsTxDone = TRUE;
+  gBS->CloseEvent (Read->TxIoToken.CompletionToken.Event);
 }
 
 VOID
@@ -159,6 +160,8 @@ P9LRead (
   Status = EFI_SUCCESS;
 
 Exit:
+  gBS->CloseEvent (Read->RxIoToken.CompletionToken.Event);
+
   if (Read != NULL) {
     FreePool (Read);
   }

@@ -19,6 +19,7 @@ TxReadLinkCallback (
 
   ReadLink = (P9_MESSAGE_PRIVATE_DATA *)Context;
   ReadLink->IsTxDone = TRUE;
+  gBS->CloseEvent (ReadLink->TxIoToken.CompletionToken.Event);
 }
 
 VOID
@@ -32,6 +33,7 @@ RxReadLinkCallback (
 
   ReadLink = (P9_MESSAGE_PRIVATE_DATA *)Context;
   ReadLink->IsRxDone = TRUE;
+  gBS->CloseEvent (ReadLink->RxIoToken.CompletionToken.Event);
 }
 
 EFI_STATUS

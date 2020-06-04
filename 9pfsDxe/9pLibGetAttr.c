@@ -87,6 +87,7 @@ TxGetAttrCallback (
 
   GetAttr = (P9_MESSAGE_PRIVATE_DATA *)Context;
   GetAttr->IsTxDone = TRUE;
+  gBS->CloseEvent (GetAttr->TxIoToken.CompletionToken.Event);
 }
 
 VOID
@@ -100,6 +101,7 @@ RxGetAttrCallback (
 
   GetAttr = (P9_MESSAGE_PRIVATE_DATA *)Context;
   GetAttr->IsRxDone = TRUE;
+  gBS->CloseEvent (GetAttr->RxIoToken.CompletionToken.Event);
 }
 
 EFI_STATUS

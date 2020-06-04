@@ -19,6 +19,7 @@ TxClunkCallback (
 
   Clunk = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Clunk->IsTxDone = TRUE;
+  gBS->CloseEvent (Clunk->TxIoToken.CompletionToken.Event);
 }
 
 VOID
@@ -32,6 +33,7 @@ RxClunkCallback (
 
   Clunk = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Clunk->IsRxDone = TRUE;
+  gBS->CloseEvent (Clunk->RxIoToken.CompletionToken.Event);
 }
 
 EFI_STATUS

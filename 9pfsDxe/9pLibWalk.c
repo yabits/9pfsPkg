@@ -19,6 +19,7 @@ TxWalkCallback (
 
   Walk = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Walk->IsTxDone = TRUE;
+  gBS->CloseEvent (Walk->TxIoToken.CompletionToken.Event);
 }
 
 VOID
@@ -32,6 +33,7 @@ RxWalkCallback (
 
   Walk = (P9_MESSAGE_PRIVATE_DATA *)Context;
   Walk->IsRxDone = TRUE;
+  gBS->CloseEvent (Walk->RxIoToken.CompletionToken.Event);
 }
 
 EFI_STATUS

@@ -19,6 +19,7 @@ TxReadDirCallback (
 
   ReadDir = (P9_MESSAGE_PRIVATE_DATA *)Context;
   ReadDir->IsTxDone = TRUE;
+  gBS->CloseEvent (ReadDir->TxIoToken.CompletionToken.Event);
 }
 
 VOID
@@ -32,6 +33,7 @@ RxReadDirCallback (
 
   ReadDir = (P9_MESSAGE_PRIVATE_DATA *)Context;
   ReadDir->IsRxDone = TRUE;
+  gBS->CloseEvent (ReadDir->RxIoToken.CompletionToken.Event);
 }
 
 EFI_STATUS

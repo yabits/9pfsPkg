@@ -19,6 +19,7 @@ P9ConnectionCallback (
 
   Connect = (P9_CONNECT_PRIVATE_DATA *)Context;
   Connect->IsConnectDone = TRUE;
+  gBS->CloseEvent (Connect->ConnectionToken.CompletionToken.Event);
 }
 
 EFI_STATUS
