@@ -8,34 +8,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "9pLib.h"
 
-VOID
-EFIAPI
-TxOpenCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  P9_MESSAGE_PRIVATE_DATA  *Open;
-
-  Open = (P9_MESSAGE_PRIVATE_DATA *)Context;
-  Open->IsTxDone = TRUE;
-  gBS->CloseEvent (Open->TxIoToken.CompletionToken.Event);
-}
-
-VOID
-EFIAPI
-RxOpenCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  P9_MESSAGE_PRIVATE_DATA  *Open;
-
-  Open = (P9_MESSAGE_PRIVATE_DATA *)Context;
-  Open->IsRxDone = TRUE;
-  gBS->CloseEvent (Open->RxIoToken.CompletionToken.Event);
-}
-
 EFI_STATUS
 P9LOpen (
   IN P9_VOLUME          *Volume,
@@ -43,40 +15,8 @@ P9LOpen (
   )
 {
   EFI_STATUS                    Status;
-  P9_MESSAGE_PRIVATE_DATA       *Open;
-  EFI_TCP4_PROTOCOL             *Tcp4;
   P9TLOpen                      *TxOpen;
   P9RLOpen                      *RxOpen;
-
-  Tcp4 = Volume->Tcp4;
-
-  Open = AllocateZeroPool (sizeof (P9_MESSAGE_PRIVATE_DATA));
-  if (Open == NULL) {
-    Status = EFI_OUT_OF_RESOURCES;
-    goto Exit;
-  }
-
-  Status = gBS->CreateEvent(
-      EVT_NOTIFY_SIGNAL,
-      TPL_CALLBACK,
-      TxOpenCallback,
-      Open,
-      &Open->TxIoToken.CompletionToken.Event
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  Status = gBS->CreateEvent(
-      EVT_NOTIFY_SIGNAL,
-      TPL_CALLBACK,
-      RxOpenCallback,
-      Open,
-      &Open->RxIoToken.CompletionToken.Event
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
 
   TxOpen = AllocateZeroPool (sizeof (P9TLOpen));
   if (TxOpen == NULL) {
@@ -90,40 +30,21 @@ P9LOpen (
   TxOpen->Fid         = IFile->Fid;
   TxOpen->Flags       = IFile->Flags;
 
-  Open->IsTxDone = FALSE;
-  Status = TransmitTcp4 (
-      Tcp4,
-      &Open->TxIoToken,
-      TxOpen,
-      sizeof (P9TLOpen)
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  while (!Open->IsTxDone) {
-    Tcp4->Poll (Tcp4);
-  }
-
   RxOpen = AllocateZeroPool (sizeof (P9RLOpen));
   if (RxOpen == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;
   }
 
-  Open->IsRxDone = FALSE;
-  Status = ReceiveTcp4 (
-      Tcp4,
-      &Open->RxIoToken,
-      RxOpen,
-      sizeof (P9RLOpen)
-      );
+  Status = DoP9 (
+    Volume,
+    TxOpen,
+    sizeof (P9TLOpen),
+    RxOpen,
+    sizeof (P9RLOpen)
+    );
   if (EFI_ERROR (Status)) {
     goto Exit;
-  }
-
-  while (!Open->IsRxDone) {
-    Tcp4->Poll (Tcp4);
   }
 
   if (RxOpen->Header.Id != Rlopen) {
@@ -135,10 +56,6 @@ P9LOpen (
   IFile->IoUnit = RxOpen->IoUnit;
 
 Exit:
-  if (Open != NULL) {
-    FreePool (Open);
-  }
-
   if (TxOpen != NULL) {
     FreePool (TxOpen);
   }

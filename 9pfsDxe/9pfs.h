@@ -73,6 +73,10 @@ struct _P9_VOLUME {
   UINT32                          MSize;
   UINT16                          Tag;
   EFI_FILE_SYSTEM_INFO            *FileSystemInfo;
+  EFI_TCP4_IO_TOKEN               TxIoToken;
+  EFI_TCP4_IO_TOKEN               RxIoToken;
+  BOOLEAN                         IsTxDone;
+  BOOLEAN                         IsRxDone;
 };
 
 //

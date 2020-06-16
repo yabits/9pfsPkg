@@ -26,38 +26,9 @@ P9GetNextNameComponent (
   return Path;
 }
 
-VOID
-EFIAPI
-TxWalkCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  P9_MESSAGE_PRIVATE_DATA  *Walk;
-
-  Walk = (P9_MESSAGE_PRIVATE_DATA *)Context;
-  Walk->IsTxDone = TRUE;
-  gBS->CloseEvent (Walk->TxIoToken.CompletionToken.Event);
-}
-
-VOID
-EFIAPI
-RxWalkCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  P9_MESSAGE_PRIVATE_DATA  *Walk;
-
-  Walk = (P9_MESSAGE_PRIVATE_DATA *)Context;
-  Walk->IsRxDone = TRUE;
-  gBS->CloseEvent (Walk->RxIoToken.CompletionToken.Event);
-}
-
 EFI_STATUS
 DoP9Walk (
-  IN EFI_TCP4_PROTOCOL  *Tcp4,
-  IN UINT16             Tag,
+  IN P9_VOLUME          *Volume,
   IN UINT32             Fid,
   IN UINT32             NewFid,
   IN CHAR16             *Path,
@@ -65,40 +36,11 @@ DoP9Walk (
   )
 {
   EFI_STATUS                    Status;
-  P9_MESSAGE_PRIVATE_DATA       *Walk;
   UINTN                         PathSize;
   P9TWalk                       *TxWalk;
   UINTN                         TxWalkSize;
   P9RWalk                       *RxWalk;
   UINTN                         RxWalkSize;
-
-  Walk = AllocateZeroPool (sizeof (P9_MESSAGE_PRIVATE_DATA));
-  if (Walk == NULL) {
-    Status = EFI_OUT_OF_RESOURCES;
-    goto Exit;
-  }
-
-  Status = gBS->CreateEvent (
-      EVT_NOTIFY_SIGNAL,
-      TPL_CALLBACK,
-      TxWalkCallback,
-      Walk,
-      &Walk->TxIoToken.CompletionToken.Event
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  Status = gBS->CreateEvent (
-      EVT_NOTIFY_SIGNAL,
-      TPL_CALLBACK,
-      RxWalkCallback,
-      Walk,
-      &Walk->RxIoToken.CompletionToken.Event
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
 
   if (Path == NULL) {
     PathSize = 0;
@@ -115,26 +57,11 @@ DoP9Walk (
 
   TxWalk->Header.Size   = TxWalkSize;
   TxWalk->Header.Id     = Twalk;
-  TxWalk->Header.Tag    = Tag;
+  TxWalk->Header.Tag    = Volume->Tag;
   TxWalk->Fid           = Fid;
   TxWalk->NewFid        = NewFid;
   TxWalk->NWName        = 1;
   UnicodeStrToP9StringS (Path, &TxWalk->WName[0], PathSize);
-
-  Walk->IsTxDone = FALSE;
-  Status = TransmitTcp4 (
-      Tcp4,
-      &Walk->TxIoToken,
-      TxWalk,
-      TxWalkSize
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  while (!Walk->IsTxDone) {
-    Tcp4->Poll (Tcp4);
-  }
 
   RxWalkSize = sizeof (P9RWalk) + sizeof (Qid) * 1;
   RxWalk = AllocateZeroPool (RxWalkSize);
@@ -143,19 +70,15 @@ DoP9Walk (
     goto Exit;
   }
 
-  Walk->IsRxDone = FALSE;
-  Status = ReceiveTcp4 (
-      Tcp4,
-      &Walk->RxIoToken,
-      RxWalk,
-      RxWalkSize
-      );
+  Status = DoP9 (
+    Volume,
+    TxWalk,
+    TxWalkSize,
+    RxWalk,
+    RxWalkSize
+    );
   if (EFI_ERROR (Status)) {
     goto Exit;
-  }
-
-  while (!Walk->IsRxDone) {
-    Tcp4->Poll (Tcp4);
   }
 
   if (RxWalk->Header.Id != Rwalk) {
@@ -166,10 +89,6 @@ DoP9Walk (
   CopyMem (NewQid, &RxWalk->WQid[0], QID_SIZE);
 
 Exit:
-  if (Walk != NULL) {
-    FreePool (Walk);
-  }
-
   if (TxWalk != NULL) {
     FreePool (TxWalk);
   }
@@ -235,7 +154,7 @@ P9Walk (
 
     NewFid = GetFid ();
     SetMem (&NewQid, QID_SIZE, 0);
-    Status = DoP9Walk (Volume->Tcp4, Volume->Tag, Fid, NewFid, ComponentName, &NewQid);
+    Status = DoP9Walk (Volume, Fid, NewFid, ComponentName, &NewQid);
     if (EFI_ERROR (Status)) {
       goto Exit;
     }

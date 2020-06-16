@@ -8,34 +8,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "9pLib.h"
 
-VOID
-EFIAPI
-TxReadDirCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  P9_MESSAGE_PRIVATE_DATA  *ReadDir;
-
-  ReadDir = (P9_MESSAGE_PRIVATE_DATA *)Context;
-  ReadDir->IsTxDone = TRUE;
-  gBS->CloseEvent (ReadDir->TxIoToken.CompletionToken.Event);
-}
-
-VOID
-EFIAPI
-RxReadDirCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  P9_MESSAGE_PRIVATE_DATA  *ReadDir;
-
-  ReadDir = (P9_MESSAGE_PRIVATE_DATA *)Context;
-  ReadDir->IsRxDone = TRUE;
-  gBS->CloseEvent (ReadDir->RxIoToken.CompletionToken.Event);
-}
-
 EFI_STATUS
 P9LReadDir (
   IN P9_VOLUME          *Volume,
@@ -46,41 +18,9 @@ P9LReadDir (
   )
 {
   EFI_STATUS                    Status;
-  P9_MESSAGE_PRIVATE_DATA       *ReadDir;
-  EFI_TCP4_PROTOCOL             *Tcp4;
   P9TReadDir                    *TxReadDir;
   P9RReadDir                    *RxReadDir;
   UINTN                         RxReadDirSize;
-
-  Tcp4 = Volume->Tcp4;
-
-  ReadDir = AllocateZeroPool (sizeof (P9_MESSAGE_PRIVATE_DATA));
-  if (ReadDir == NULL) {
-    Status = EFI_OUT_OF_RESOURCES;
-    goto Exit;
-  }
-
-  Status = gBS->CreateEvent(
-      EVT_NOTIFY_SIGNAL,
-      TPL_CALLBACK,
-      TxReadDirCallback,
-      ReadDir,
-      &ReadDir->TxIoToken.CompletionToken.Event
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  Status = gBS->CreateEvent(
-      EVT_NOTIFY_SIGNAL,
-      TPL_CALLBACK,
-      RxReadDirCallback,
-      ReadDir,
-      &ReadDir->RxIoToken.CompletionToken.Event
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
 
   TxReadDir = AllocateZeroPool (sizeof (P9TReadDir));
   if (TxReadDir == NULL) {
@@ -95,21 +35,6 @@ P9LReadDir (
   TxReadDir->Offset      = Offset;
   TxReadDir->Count       = *Count;
 
-  ReadDir->IsTxDone = FALSE;
-  Status = TransmitTcp4 (
-      Tcp4,
-      &ReadDir->TxIoToken,
-      TxReadDir,
-      sizeof (P9TReadDir)
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  while (!ReadDir->IsTxDone) {
-    Tcp4->Poll (Tcp4);
-  }
-
   RxReadDirSize = sizeof (P9RReadDir) + *Count;
   RxReadDir = AllocateZeroPool (RxReadDirSize);
   if (RxReadDir == NULL) {
@@ -117,19 +42,15 @@ P9LReadDir (
     goto Exit;
   }
 
-  ReadDir->IsRxDone = FALSE;
-  Status = ReceiveTcp4 (
-      Tcp4,
-      &ReadDir->RxIoToken,
-      RxReadDir,
-      RxReadDirSize
-      );
+  Status = DoP9 (
+    Volume,
+    TxReadDir,
+    sizeof (P9TReadDir),
+    RxReadDir,
+    RxReadDirSize
+    );
   if (EFI_ERROR (Status)) {
     goto Exit;
-  }
-
-  while (!ReadDir->IsRxDone) {
-    Tcp4->Poll (Tcp4);
   }
 
   if (RxReadDir->Header.Id != Rreaddir) {
@@ -143,10 +64,6 @@ P9LReadDir (
   Status = EFI_SUCCESS;
 
 Exit:
-  if (ReadDir != NULL) {
-    FreePool (ReadDir);
-  }
-
   if (TxReadDir != NULL) {
     FreePool (TxReadDir);
   }

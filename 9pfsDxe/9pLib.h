@@ -82,6 +82,15 @@ ConnectP9 (
   );
 
 EFI_STATUS
+DoP9 (
+  IN P9_VOLUME          *Volume,
+  IN VOID               *TxData,
+  IN UINTN              TxDataSize,
+  IN OUT VOID           *RxData,
+  IN OUT UINTN          RxDataSize
+  );
+
+EFI_STATUS
 P9Error (
   IN VOID               *Data,
   IN UINTN              DataSize

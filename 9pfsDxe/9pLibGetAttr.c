@@ -76,34 +76,6 @@ EpochToEfiTime (
 
 }
 
-VOID
-EFIAPI
-TxGetAttrCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  P9_MESSAGE_PRIVATE_DATA  *GetAttr;
-
-  GetAttr = (P9_MESSAGE_PRIVATE_DATA *)Context;
-  GetAttr->IsTxDone = TRUE;
-  gBS->CloseEvent (GetAttr->TxIoToken.CompletionToken.Event);
-}
-
-VOID
-EFIAPI
-RxGetAttrCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  P9_MESSAGE_PRIVATE_DATA  *GetAttr;
-
-  GetAttr = (P9_MESSAGE_PRIVATE_DATA *)Context;
-  GetAttr->IsRxDone = TRUE;
-  gBS->CloseEvent (GetAttr->RxIoToken.CompletionToken.Event);
-}
-
 EFI_STATUS
 P9GetAttr (
   IN P9_VOLUME          *Volume,
@@ -111,42 +83,10 @@ P9GetAttr (
   )
 {
   EFI_STATUS                    Status;
-  P9_MESSAGE_PRIVATE_DATA       *GetAttr;
-  EFI_TCP4_PROTOCOL             *Tcp4;
   P9TGetAttr                    *TxGetAttr;
   P9RGetAttr                    *RxGetAttr;
   UINTN                         Size;
   EFI_FILE_INFO                 *FileInfo;
-
-  Tcp4 = Volume->Tcp4;
-
-  GetAttr = AllocateZeroPool (sizeof (P9_MESSAGE_PRIVATE_DATA));
-  if (GetAttr == NULL) {
-    Status = EFI_OUT_OF_RESOURCES;
-    goto Exit;
-  }
-
-  Status = gBS->CreateEvent(
-      EVT_NOTIFY_SIGNAL,
-      TPL_CALLBACK,
-      TxGetAttrCallback,
-      GetAttr,
-      &GetAttr->TxIoToken.CompletionToken.Event
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  Status = gBS->CreateEvent(
-      EVT_NOTIFY_SIGNAL,
-      TPL_CALLBACK,
-      RxGetAttrCallback,
-      GetAttr,
-      &GetAttr->RxIoToken.CompletionToken.Event
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
 
   TxGetAttr = AllocateZeroPool (sizeof (P9TGetAttr));
   if (TxGetAttr == NULL) {
@@ -160,40 +100,21 @@ P9GetAttr (
   TxGetAttr->Fid          = IFile->Fid;
   TxGetAttr->RequestMask  = P9_GETATTR_ALL;
 
-  GetAttr->IsTxDone = FALSE;
-  Status = TransmitTcp4 (
-      Tcp4,
-      &GetAttr->TxIoToken,
-      TxGetAttr,
-      sizeof (P9TGetAttr)
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  while (!GetAttr->IsTxDone) {
-    Tcp4->Poll (Tcp4);
-  }
-
   RxGetAttr = AllocateZeroPool (sizeof (P9RGetAttr));
   if (RxGetAttr == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
     goto Exit;
   }
 
-  GetAttr->IsRxDone = FALSE;
-  Status = ReceiveTcp4 (
-      Tcp4,
-      &GetAttr->RxIoToken,
-      RxGetAttr,
-      sizeof (P9RGetAttr)
-      );
+  Status = DoP9 (
+    Volume,
+    TxGetAttr,
+    sizeof (P9TGetAttr),
+    RxGetAttr,
+    sizeof (P9RGetAttr)
+    );
   if (EFI_ERROR (Status)) {
     goto Exit;
-  }
-
-  while (!GetAttr->IsRxDone) {
-    Tcp4->Poll (Tcp4);
   }
 
   if (RxGetAttr->Header.Id != Rgetattr) {
@@ -230,10 +151,6 @@ P9GetAttr (
   Status = EFI_SUCCESS;
 
 Exit:
-  if (GetAttr != NULL) {
-    FreePool (GetAttr);
-  }
-
   if (TxGetAttr != NULL) {
     FreePool (TxGetAttr);
   }

@@ -8,34 +8,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "9pLib.h"
 
-VOID
-EFIAPI
-TxVersionCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  P9_MESSAGE_PRIVATE_DATA *Version;
-
-  Version = (P9_MESSAGE_PRIVATE_DATA *)Context;
-  Version->IsTxDone = TRUE;
-  gBS->CloseEvent (Version->TxIoToken.CompletionToken.Event);
-}
-
-VOID
-EFIAPI
-RxVersionCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  P9_MESSAGE_PRIVATE_DATA *Version;
-
-  Version = (P9_MESSAGE_PRIVATE_DATA *)Context;
-  Version->IsRxDone = TRUE;
-  gBS->CloseEvent (Version->RxIoToken.CompletionToken.Event);
-}
-
 EFI_STATUS
 P9Version (
   IN P9_VOLUME          *Volume,
@@ -43,44 +15,12 @@ P9Version (
   )
 {
   EFI_STATUS                    Status;
-  P9_MESSAGE_PRIVATE_DATA       *Version;
-  EFI_TCP4_PROTOCOL             *Tcp4;
   UINTN                         VersionSize;
   CHAR8                         *VersionString;
   UINTN                         TxVersionSize;
   UINTN                         RxVersionSize;
   P9TVersion                    *TxVersion;
   P9RVersion                    *RxVersion;
-
-  Tcp4 = Volume->Tcp4;
-
-  Version = AllocateZeroPool (sizeof (P9_MESSAGE_PRIVATE_DATA));
-  if (Version == NULL) {
-    Status = EFI_OUT_OF_RESOURCES;
-    goto Exit;
-  }
-
-  Status = gBS->CreateEvent(
-      EVT_NOTIFY_SIGNAL,
-      TPL_CALLBACK,
-      TxVersionCallback,
-      Version,
-      &Version->TxIoToken.CompletionToken.Event
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  Status = gBS->CreateEvent(
-      EVT_NOTIFY_SIGNAL,
-      TPL_CALLBACK,
-      RxVersionCallback,
-      Version,
-      &Version->RxIoToken.CompletionToken.Event
-      );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
 
   VersionString = P9_VERSION;
   VersionSize = AsciiStrLen (VersionString);
@@ -97,16 +37,6 @@ P9Version (
   TxVersion->MSize = *MSize;
   AsciiStrToP9StringS (VersionString, &TxVersion->Version, VersionSize);
 
-  Version->IsTxDone = FALSE;
-  Status = TransmitTcp4 (Tcp4, &Version->TxIoToken, TxVersion, TxVersionSize);
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
-
-  while (!Version->IsTxDone) {
-    Tcp4->Poll (Tcp4);
-  }
-
   RxVersionSize = TxVersionSize;
   RxVersion = AllocateZeroPool (RxVersionSize);
   if (RxVersion == NULL) {
@@ -114,14 +44,15 @@ P9Version (
     goto Exit;
   }
 
-  Version->IsRxDone = FALSE;
-  Status = ReceiveTcp4 (Tcp4, &Version->RxIoToken, RxVersion, RxVersionSize);
+  Status = DoP9 (
+    Volume,
+    TxVersion,
+    TxVersionSize,
+    RxVersion,
+    RxVersionSize
+    );
   if (EFI_ERROR (Status)) {
     goto Exit;
-  }
-
-  while (!Version->IsRxDone) {
-    Tcp4->Poll (Tcp4);
   }
 
   if (RxVersion->Header.Id != Rversion) {
@@ -137,10 +68,6 @@ P9Version (
   *MSize = RxVersion->MSize;
 
 Exit:
-  if (Version != NULL) {
-    FreePool (Version);
-  }
-
   if (TxVersion != NULL) {
     FreePool (TxVersion);
   }

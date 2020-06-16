@@ -103,6 +103,112 @@ ReceiveTcp4 (
   return EFI_SUCCESS;
 }
 
+VOID
+EFIAPI
+TxCallback (
+  IN EFI_EVENT  Event,
+  IN VOID       *Context
+  )
+{
+  P9_VOLUME *Volume;
+
+  Volume = (P9_VOLUME *)Context;
+  Volume->IsTxDone = TRUE;
+}
+
+VOID
+EFIAPI
+RxCallback (
+  IN EFI_EVENT  Event,
+  IN VOID       *Context
+  )
+{
+  P9_VOLUME *Volume;
+
+  Volume = (P9_VOLUME *)Context;
+  Volume->IsRxDone = TRUE;
+}
+
+EFI_STATUS
+DoP9 (
+  IN P9_VOLUME          *Volume,
+  IN VOID               *TxData,
+  IN UINTN              TxDataSize,
+  IN OUT VOID           *RxData,
+  IN OUT UINTN          RxDataSize
+  )
+{
+  EFI_STATUS                    Status;
+  EFI_TCP4_PROTOCOL             *Tcp4;
+
+  if (Volume == NULL || TxData == NULL || RxData == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  Tcp4 = Volume->Tcp4;
+
+  if (Volume->TxIoToken.CompletionToken.Event == NULL) {
+    Status = gBS->CreateEvent (
+      EVT_NOTIFY_SIGNAL,
+      TPL_CALLBACK,
+      TxCallback,
+      Volume,
+      &Volume->TxIoToken.CompletionToken.Event
+      );
+    if (EFI_ERROR (Status)) {
+      goto Exit;
+    }
+  }
+
+  if (Volume->RxIoToken.CompletionToken.Event == NULL) {
+    Status = gBS->CreateEvent (
+      EVT_NOTIFY_SIGNAL,
+      TPL_CALLBACK,
+      RxCallback,
+      Volume,
+      &Volume->RxIoToken.CompletionToken.Event
+      );
+    if (EFI_ERROR (Status)) {
+      goto Exit;
+    }
+  }
+
+  Volume->IsTxDone = FALSE;
+  Status = TransmitTcp4 (
+    Tcp4,
+    &Volume->TxIoToken,
+    TxData,
+    TxDataSize
+    );
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  while (Volume->IsTxDone != TRUE) {
+    Tcp4->Poll (Tcp4);
+  }
+
+  Volume->IsRxDone = FALSE;
+  Status = ReceiveTcp4 (
+    Tcp4,
+    &Volume->RxIoToken,
+    RxData,
+    RxDataSize
+    );
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  while (Volume->IsRxDone != TRUE) {
+    Tcp4->Poll (Tcp4);
+  }
+
+  Status = EFI_SUCCESS;
+
+Exit:
+  return Status;
+}
+
 EFI_STATUS
 AsciiStrToP9StringS (
   IN CONST CHAR8        *Source,
