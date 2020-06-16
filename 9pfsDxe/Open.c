@@ -16,6 +16,38 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define	O_RDWR		0x0002		/* open for reading and writing */
 #define	O_ACCMODE	0x0003		/* mask for above modes */
 
+CHAR16 *
+GetFileNameFromPath (
+  IN  CHAR16                  *Path
+  )
+{
+  UINTN   PathLength;
+  UINTN   FileNameLength;
+  CHAR16  *PathHead;
+  CHAR16  *FileName;
+
+  if (Path == NULL) {
+    Path = L"\0";
+  }
+
+  PathLength = StrLen (Path);
+  PathHead = Path + PathLength - 1;
+  FileNameLength = 0;
+  while (PathLength-- && *PathHead && *PathHead != PATH_NAME_SEPARATOR) {
+    PathHead--;
+    FileNameLength++;
+  }
+  PathHead++; // Exclude backslash
+
+  FileName = AllocateZeroPool (sizeof (CHAR16) * (FileNameLength + 1));
+  if (FileName == NULL) {
+    return L"\0";
+  }
+  StrnCatS (FileName, FileNameLength + 1, PathHead, FileNameLength);
+
+  return FileName;
+}
+
 /**
 
   Implements OpenEx() of Simple File System Protocol.
@@ -56,6 +88,20 @@ P9OpenEx (
   IFile = IFILE_FROM_FHAND (FHand);
   Volume = IFile->Volume;
 
+  // Root is already opened.
+  if (StrCmp (FileName, L"\\") == 0) {
+    NewIFile = Volume->Root;
+    *NewHandle = &NewIFile->Handle;
+    return EFI_SUCCESS;
+  }
+
+  // Current is aleady opened.
+  if (StrCmp (FileName, L".") == 0) {
+    NewIFile = IFile;
+    *NewHandle = &NewIFile->Handle;
+    return EFI_SUCCESS;
+  }
+
   NewIFile = AllocateZeroPool (sizeof (P9_IFILE));
   if (NewIFile == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
@@ -66,20 +112,11 @@ P9OpenEx (
   NewIFile->Volume     = Volume;
   NewIFile->Flags      = O_RDONLY; // Currently supports read only.
   NewIFile->IsOpened   = FALSE;
-  CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
-  if (FileName == NULL) {
-    FileName = AllocateZeroPool (sizeof (CHAR16) * 1);
-    FileName[0] = L'\0';
-  }
-  if (FileName[0] == L'\\') {
-    NewIFile->FileName   = AllocateZeroPool (StrLen (FileName));
-    StrCpyS (NewIFile->FileName, StrLen (FileName), FileName + 1);
-  } else {
-    NewIFile->FileName   = AllocateZeroPool (StrLen (FileName) + 1);
-    StrCpyS (NewIFile->FileName, StrLen (FileName) + 1, FileName);
-  }
+  NewIFile->FileName   = GetFileNameFromPath (FileName);
   NewIFile->SymLinkTarget = AllocateZeroPool (sizeof (CHAR16) * (P9_MAX_PATH + 1));
+  CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
 
+  DEBUG ((DEBUG_INFO, "%a:%d: FileName: %s\n", __func__, __LINE__, FileName));
   Status = P9Walk (Volume, IFile, NewIFile, FileName);
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_INFO, "%a:%d %r\n", __func__, __LINE__, Status));

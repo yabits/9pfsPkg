@@ -8,6 +8,24 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "9pLib.h"
 
+CHAR16 *
+P9GetNextNameComponent (
+  IN CHAR16   *Path,
+  OUT CHAR16  *Name
+  )
+{
+  while (*Path != 0 && *Path != PATH_NAME_SEPARATOR) {
+    *Name++ = *Path++;
+  }
+  *Name = L'\0';
+
+  while (*Path == PATH_NAME_SEPARATOR) {
+    Path++;
+  }
+
+  return Path;
+}
+
 VOID
 EFIAPI
 TxWalkCallback (
@@ -164,7 +182,6 @@ Exit:
   return Status;
 }
 
-// TODO: Support depth > 1 path.
 EFI_STATUS
 P9Walk (
   IN P9_VOLUME          *Volume,
@@ -174,28 +191,56 @@ P9Walk (
   )
 {
   EFI_STATUS  Status;
+  CHAR16      ComponentName[P9_MAX_PATH];
+  UINTN       PathLen;
+  CHAR16      *Next;
   UINT32      Fid;
   UINT32      NewFid;
   Qid         NewQid;
 
-  if (Path[0] == L'\\') {
+  PathLen = StrLen (Path);
+  if (PathLen == 0) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  if (Path[0] == PATH_NAME_SEPARATOR) {
+    // Absolute path.
     Fid = Volume->Root->Fid;
     Path++;
+    PathLen--;
   } else {
+    // Relative path.
     Fid = IFile->Fid;
   }
 
-  if (StrnCmp (Path, L"..", 2) == 0) {
-    DEBUG ((DEBUG_INFO, "Fid: %d\n", Fid));
+  // Parent of the root directory does not exist.
+  if (Fid == Volume->Root->Fid && StrnCmp (Path, L"..", 2) == 0) {
     Status = EFI_NOT_FOUND;
     goto Exit;
   }
 
-  NewFid = GetFid ();
-  SetMem (&NewQid, QID_SIZE, 0);
-  Status = DoP9Walk (Volume->Tcp4, Volume->Tag, Fid, NewFid, Path, &NewQid);
-  if (EFI_ERROR (Status)) {
-    goto Exit;
+  // Start at current location.
+  Next = Path;
+  for (;;) {
+    // Get the next component name.
+    Path = Next;
+    Next = P9GetNextNameComponent (Path, ComponentName);
+    // If end of the file name, we're done
+    if (ComponentName[0] == L'\0') {
+      break;
+    }
+    // If "dot", then current.
+    if (StrCmp (ComponentName, L".") == 0) {
+      continue;
+    }
+
+    NewFid = GetFid ();
+    SetMem (&NewQid, QID_SIZE, 0);
+    Status = DoP9Walk (Volume->Tcp4, Volume->Tag, Fid, NewFid, ComponentName, &NewQid);
+    if (EFI_ERROR (Status)) {
+      goto Exit;
+    }
+    Fid = NewFid;
   }
 
   NewIFile->Fid = NewFid;

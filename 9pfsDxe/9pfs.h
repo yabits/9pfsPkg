@@ -41,6 +41,11 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #define VOLUME_FROM_VOL_INTERFACE(a) CR (a, P9_VOLUME, VolumeInterface, P9_VOLUME_SIGNATURE);
 
+//
+// Path name separator is back slash
+//
+#define PATH_NAME_SEPARATOR     L'\\'
+
 typedef struct _P9_VOLUME P9_VOLUME;
 
 typedef struct {
