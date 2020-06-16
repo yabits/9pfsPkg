@@ -157,4 +157,25 @@ P9Clunk (
   IN P9_IFILE           *IFile
   );
 
+EFI_STATUS
+AsciiStrToP9StringS (
+  IN CONST CHAR8        *Source,
+  OUT P9String          *Destination,
+  IN UINTN              DestMax
+  );
+
+EFI_STATUS
+UnicodeStrToP9StringS (
+  IN CONST CHAR16       *Source,
+  OUT P9String          *Destination,
+  IN UINTN              DestMax
+  );
+
+EFI_STATUS
+P9StringToUnicodeStrS (
+  IN P9String           *Source,
+  OUT CHAR16            *Destination,
+  IN UINTN              DestMax
+  );
+
 #endif

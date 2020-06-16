@@ -119,8 +119,7 @@ DoP9Walk (
   TxWalk->Fid           = Fid;
   TxWalk->NewFid        = NewFid;
   TxWalk->NWName        = 1;
-  TxWalk->WName[0].Size = PathSize;
-  UnicodeStrToAsciiStrS (Path, TxWalk->WName[0].String, PathSize + 1);
+  UnicodeStrToP9StringS (Path, &TxWalk->WName[0], PathSize);
 
   Walk->IsTxDone = FALSE;
   Status = TransmitTcp4 (

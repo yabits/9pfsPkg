@@ -105,10 +105,8 @@ P9Attach (
   UName = &TxAttach->UName;
   AName = (P9String *)((UINT8 *)&TxAttach->UName + sizeof (P9String) + sizeof (CHAR8) * UNameSize);
 
-  UName->Size = UNameSize;
-  AName->Size = ANameSize;
-  AsciiStrnCpy (UName->String, UNameStr, UNameSize);
-  AsciiStrnCpy (AName->String, ANameStr, ANameSize);
+  AsciiStrToP9StringS (UNameStr, UName, UNameSize);
+  AsciiStrToP9StringS (ANameStr, AName, ANameSize);
 
   Attach->IsTxDone = FALSE;
   Status = TransmitTcp4 (

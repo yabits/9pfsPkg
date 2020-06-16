@@ -166,7 +166,6 @@ P9DirRead (
   UINTN             NameSize;
   P9_IFILE          *NewIFile;
   CHAR16            *Path;
-  UINTN             Index;
 
   DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
 
@@ -216,11 +215,7 @@ P9DirRead (
     DEBUG ((DEBUG_ERROR, "%a:%d: %r\n", __func__, __LINE__, Status));
     goto Exit;
   }
-  DEBUG ((DEBUG_INFO, "%a:%d: NameSize: %d\n", __func__, __LINE__, NameSize));
-  for (Index = 0; Index < DirEnt->Name.Size; Index++) {
-    Path[Index] = (CHAR16)DirEnt->Name.String[Index];
-  }
-  Path[DirEnt->Name.Size] = L'\0';
+  P9StringToUnicodeStrS (&DirEnt->Name, Path, NameSize);
   NewIFile = AllocateZeroPool (sizeof (P9_IFILE));
   if (NewIFile == NULL) {
     Status = EFI_OUT_OF_RESOURCES;

@@ -202,11 +202,7 @@ P9GetAttr (
   }
 
   Size = SIZE_OF_EFI_FILE_INFO;
-  if (IFile->FileName != NULL) {
-    Size += StrSize (IFile->FileName);
-  } else {
-    Size += sizeof (CHAR16) * 1;
-  }
+  Size += StrSize (IFile->FileName);
 
   if (IFile->FileInfo == NULL) {
     IFile->FileInfo = AllocateZeroPool (Size);
@@ -229,11 +225,7 @@ P9GetAttr (
   FileInfo->FileSize                     = RxGetAttr->Size;
   FileInfo->PhysicalSize                 = BLK_UNIT * RxGetAttr->Blocks;
   FileInfo->Attribute                    = S_ISDIR (RxGetAttr->Mode) ? EFI_FILE_DIRECTORY : EFI_FILE_ARCHIVE;
-  if (IFile->FileName != NULL) {
-    StrCpyS (FileInfo->FileName, StrLen (IFile->FileName) + 1, IFile->FileName);
-  } else {
-    FileInfo->FileName[0] = L'\0';
-  }
+  StrCpyS (FileInfo->FileName, StrLen (IFile->FileName) + 1, IFile->FileName);
 
   Status = EFI_SUCCESS;
 

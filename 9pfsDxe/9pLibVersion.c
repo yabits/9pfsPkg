@@ -95,8 +95,7 @@ P9Version (
   TxVersion->Header.Id = Tversion;
   TxVersion->Header.Tag = P9_NOTAG;
   TxVersion->MSize = *MSize;
-  TxVersion->Version.Size = VersionSize;
-  CopyMem (&TxVersion->Version.String, VersionString, sizeof (CHAR8) * VersionSize);
+  AsciiStrToP9StringS (VersionString, &TxVersion->Version, VersionSize);
 
   Version->IsTxDone = FALSE;
   Status = TransmitTcp4 (Tcp4, &Version->TxIoToken, TxVersion, TxVersionSize);
