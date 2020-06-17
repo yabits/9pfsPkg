@@ -140,6 +140,10 @@ DoP9 (
 {
   EFI_STATUS                    Status;
   EFI_TCP4_PROTOCOL             *Tcp4;
+  VOID                          *RxDataPtr;
+  UINTN                         RxDataSizeCount;
+  UINT32                        RxDataLength;
+  BOOLEAN                       HasMoreRxData;
 
   if (Volume == NULL || TxData == NULL || RxData == NULL) {
     return EFI_INVALID_PARAMETER;
@@ -188,19 +192,32 @@ DoP9 (
     Tcp4->Poll (Tcp4);
   }
 
-  Volume->IsRxDone = FALSE;
-  Status = ReceiveTcp4 (
-    Tcp4,
-    &Volume->RxIoToken,
-    RxData,
-    RxDataSize
-    );
-  if (EFI_ERROR (Status)) {
-    goto Exit;
-  }
+  RxDataPtr = RxData;
+  RxDataSizeCount = RxDataSize;
+  HasMoreRxData = TRUE;
+  while (HasMoreRxData == TRUE) {
+    Volume->IsRxDone = FALSE;
+    Status = ReceiveTcp4 (
+      Tcp4,
+      &Volume->RxIoToken,
+      RxDataPtr,
+      Volume->MSize
+      );
+    if (EFI_ERROR (Status)) {
+      goto Exit;
+    }
 
-  while (Volume->IsRxDone != TRUE) {
-    Tcp4->Poll (Tcp4);
+    while (Volume->IsRxDone != TRUE) {
+      Tcp4->Poll (Tcp4);
+    }
+    RxDataLength = Volume->RxIoToken.Packet.RxData->DataLength;
+    RxDataPtr = (UINT8 *)RxDataPtr + RxDataLength;
+    if (RxDataLength < RxDataSizeCount) {
+      HasMoreRxData = TRUE;
+      RxDataSizeCount -= RxDataLength;
+    } else {
+      HasMoreRxData = FALSE;
+    }
   }
 
   Status = EFI_SUCCESS;
