@@ -10,7 +10,7 @@
 ##
 
 [Defines]
-  PLATFORM_NAME                  = Fat
+  PLATFORM_NAME                  = 9pfs
   PLATFORM_GUID                  = 74f38e8e-828a-4451-b341-906c42cd4eea
   PLATFORM_VERSION               = 0.1
   DSC_SPECIFICATION              = 0x00010005
