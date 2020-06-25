@@ -21,6 +21,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/PcdLib.h>
 #include <Library/DebugLib.h>
 #include <Library/UefiLib.h>
+#include <Library/NetLib.h>
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/MemoryAllocationLib.h>
@@ -35,8 +36,10 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 //
 #define P9_VOLUME_LABEL             L"9PFS"
 #define P9_VOLUME_SIGNATURE         SIGNATURE_32 ('9', 'f', 's', 'v')
+#define P9_SERVICE_SIGNATURE        SIGNATURE_32 ('9', 'p', 's', 'v')
 #define P9_IFILE_SIGNATURE          SIGNATURE_32 ('9', 'f', 's', 'i')
 
+#define P9_SERVICE_FROM_PROTOCOL(a)  CR (a, P9_SERVICE, ServiceBinding, P9_SERVICE_SIGNATURE)
 #define IFILE_FROM_FHAND(a)          CR (a, P9_IFILE, Handle, P9_IFILE_SIGNATURE)
 
 #define VOLUME_FROM_VOL_INTERFACE(a) CR (a, P9_VOLUME, VolumeInterface, P9_VOLUME_SIGNATURE);
@@ -63,11 +66,24 @@ typedef struct {
   BOOLEAN                         IsOpened;
 } P9_IFILE;
 
+typedef struct {
+  UINTN                           Signature;
+  EFI_SERVICE_BINDING_PROTOCOL    ServiceBinding;
+  EFI_HANDLE                      Ip4DriverBindingHandle;
+  EFI_HANDLE                      ControllerHandle;
+  EFI_HANDLE                      Tcp4ChildHandle;
+  LIST_ENTRY                      ChildrenList;
+  UINTN                           ChildrenNumber;
+  EFI_EVENT                       ExitBootServicesEvent;
+} P9_SERVICE;
+
 struct _P9_VOLUME {
   UINTN                           Signature;
   EFI_HANDLE                      Handle;
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL VolumeInterface;
+  P9_SERVICE                      *Service;
   P9_IFILE                        *Root;
+  EFI_HANDLE                      Tcp4ChildHandle;
   EFI_TCP4_PROTOCOL               *Tcp4;
   BOOLEAN                         IsConfigured;
   UINT32                          MSize;

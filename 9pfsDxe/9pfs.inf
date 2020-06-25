@@ -60,6 +60,7 @@
 
 [Packages]
   MdePkg/MdePkg.dec
+  NetworkPkg/NetworkPkg.dec
   9pfsPkg/9pfsPkg.dec
 
 [LibraryClasses]
@@ -72,11 +73,13 @@
   UefiDriverEntryPoint
   DebugLib
   PcdLib
+  NetLib
 
 [Guids]
   gEfiFileInfoGuid                      ## SOMETIMES_CONSUMES   ## UNDEFINED
   gEfiFileSystemInfoGuid                ## SOMETIMES_CONSUMES   ## UNDEFINED
   gEfiFileSystemVolumeLabelInfoIdGuid   ## SOMETIMES_CONSUMES   ## UNDEFINED
+  gEfiEventExitBootServicesGuid         ## SOMETIMES_CONSUMES
   g9pfsGuid                             ## PRODUCES
 
 [Protocols]
@@ -85,6 +88,7 @@
   gEfiTcp4ProtocolGuid                  ## TO_START
   gEfiUnicodeCollationProtocolGuid      ## TO_START
   gEfiUnicodeCollation2ProtocolGuid     ## TO_START
+  g9pServiceBindingProtocolGuid         ## BY_START
 
 [Pcd]
   gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultLang           ## SOMETIMES_CONSUMES
