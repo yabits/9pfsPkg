@@ -9,25 +9,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "9pfs.h"
 
-VOID
-EFIAPI
-CloseCallback (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
-}
-
-VOID
-EFIAPI
-P9NotifyExitBootServices (
-  IN EFI_EVENT  Event,
-  IN VOID       *Context
-  )
-{
-}
-
 EFI_STATUS
 EFIAPI
 P9ServiceBindingCreateChild (
@@ -469,8 +450,6 @@ P9DriverBindingStart (
   P9_SERVICE                      *P9Service;
   VOID                            *Interface;
 
-  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
-
   Status = gBS->OpenProtocol (
     ControllerHandle,
     &g9pServiceBindingProtocolGuid,
@@ -482,18 +461,14 @@ P9DriverBindingStart (
 
   if (!EFI_ERROR (Status)) {
     P9Service = P9_SERVICE_FROM_PROTOCOL (ServiceBinding);
-    DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   } else {
-    DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
     Status = P9CreateService (ControllerHandle, &P9Service);
     if (EFI_ERROR (Status)) {
-      DEBUG ((DEBUG_INFO, "%a:%d:%r\n", __func__, __LINE__, Status));
       return Status;
     }
 
     ASSERT (P9Service != NULL);
 
-    DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
     Status = gBS->InstallMultipleProtocolInterfaces (
       &ControllerHandle,
       &g9pServiceBindingProtocolGuid,
@@ -511,7 +486,6 @@ P9DriverBindingStart (
     //
     // Create a TCP4 child instance
     //
-    DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
     Status = NetLibCreateServiceChild (
                     ControllerHandle,
                     This->DriverBindingHandle,
@@ -522,7 +496,6 @@ P9DriverBindingStart (
       goto Exit;
     }
 
-    DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
     Status = gBS->OpenProtocol (
                     P9Service->Tcp4ChildHandle,
                     &gEfiTcp4ProtocolGuid,
@@ -550,7 +523,6 @@ P9DriverBindingStart (
   Volume->VolumeInterface.Revision   = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION;
   Volume->VolumeInterface.OpenVolume = P9OpenVolume;
 
-  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   Status = gBS->InstallMultipleProtocolInterfaces (
                   &ControllerHandle,
                   &gEfiSimpleFileSystemProtocolGuid,
@@ -561,19 +533,10 @@ P9DriverBindingStart (
     goto Exit;
   }
 
-  Status = gBS->CreateEventEx (
-    EVT_NOTIFY_SIGNAL,
-    TPL_CALLBACK,
-    P9NotifyExitBootServices,
-    P9Service,
-    &gEfiEventExitBootServicesGuid,
-    &P9Service->ExitBootServicesEvent
-    );
   if (EFI_ERROR (Status)) {
     goto Exit;
   }
 
-  DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   return EFI_SUCCESS;
 
 Exit:
@@ -581,7 +544,6 @@ Exit:
     FreePool (Volume);
   }
 
-  DEBUG ((DEBUG_INFO, "%a:%d:%r\n", __func__, __LINE__, Status));
   return Status;
 }
 
@@ -608,11 +570,37 @@ P9DriverBindingStop (
   )
 {
   EFI_STATUS                      Status;
-  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
-  P9_VOLUME                       *Volume;
   EFI_HANDLE                      NicHandle;
   EFI_SERVICE_BINDING_PROTOCOL    *ServiceBinding;
   P9_SERVICE                      *P9Service;
+  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
+  P9_VOLUME                       *Volume;
+
+  NicHandle = NetLibGetNicHandle (ControllerHandle, &gEfiTcp4ProtocolGuid);
+  if (NicHandle != NULL) {
+    Status = gBS->OpenProtocol (
+      NicHandle,
+      &g9pServiceBindingProtocolGuid,
+      (VOID **)&ServiceBinding,
+      This->DriverBindingHandle,
+      NicHandle,
+      EFI_OPEN_PROTOCOL_GET_PROTOCOL
+      );
+    if (!EFI_ERROR (Status)) {
+      P9Service = P9_SERVICE_FROM_PROTOCOL (ServiceBinding);
+
+      P9CleanService (P9Service);
+      if (P9Service->Tcp4ChildHandle == NULL) {
+        gBS->UninstallProtocolInterface (
+          NicHandle,
+          &g9pServiceBindingProtocolGuid,
+          ServiceBinding
+          );
+        FreePool (P9Service);
+      }
+      Status = EFI_SUCCESS;
+    }
+  }
 
   Status = gBS->OpenProtocol (
     ControllerHandle,
@@ -630,34 +618,6 @@ P9DriverBindingStop (
         &gEfiSimpleFileSystemProtocolGuid,
         &Volume->VolumeInterface
         );
-    }
-  }
-
-  if (!EFI_ERROR (Status)) {
-    NicHandle = NetLibGetNicHandle (ControllerHandle, &gEfiTcp4ProtocolGuid);
-    if (NicHandle != NULL) {
-      Status = gBS->OpenProtocol (
-        NicHandle,
-        &g9pServiceBindingProtocolGuid,
-        (VOID **)&ServiceBinding,
-        This->DriverBindingHandle,
-        NicHandle,
-        EFI_OPEN_PROTOCOL_GET_PROTOCOL
-        );
-      if (!EFI_ERROR (Status)) {
-        P9Service = P9_SERVICE_FROM_PROTOCOL (ServiceBinding);
-
-        P9CleanService (P9Service);
-        if (P9Service->Tcp4ChildHandle == NULL) {
-          gBS->UninstallProtocolInterface (
-            NicHandle,
-            &g9pServiceBindingProtocolGuid,
-            ServiceBinding
-            );
-          FreePool (P9Service);
-        }
-        Status = EFI_SUCCESS;
-      }
     }
   }
 

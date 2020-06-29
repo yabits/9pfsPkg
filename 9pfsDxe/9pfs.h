@@ -74,7 +74,6 @@ typedef struct {
   EFI_HANDLE                      Tcp4ChildHandle;
   LIST_ENTRY                      ChildrenList;
   UINTN                           ChildrenNumber;
-  EFI_EVENT                       ExitBootServicesEvent;
 } P9_SERVICE;
 
 struct _P9_VOLUME {
