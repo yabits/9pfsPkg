@@ -72,7 +72,7 @@ P9SetPosition (
 
   DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
   IFile = IFILE_FROM_FHAND (FHand);
-  if (IFile->Qid.Type != QTFile) {
+  if (IFile->Qid.Type == QTDir && Position != 0) {
     return EFI_UNSUPPORTED;
   }
   IFile->Position = Position;
