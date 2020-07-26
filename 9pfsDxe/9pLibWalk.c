@@ -163,6 +163,7 @@ P9Walk (
 
   NewIFile->Fid = NewFid;
   CopyMem (&NewIFile->Qid, &NewQid, QID_SIZE);
+  Status = EFI_SUCCESS;
 
 Exit:
   return Status;
