@@ -22,9 +22,7 @@ GetFileNameFromPath (
   )
 {
   UINTN   PathLength;
-  UINTN   FileNameLength;
   CHAR16  *PathHead;
-  CHAR16  *FileName;
 
   if (Path == NULL) {
     Path = L"\0";
@@ -32,20 +30,12 @@ GetFileNameFromPath (
 
   PathLength = StrLen (Path);
   PathHead = Path + PathLength - 1;
-  FileNameLength = 0;
   while (PathLength-- && *PathHead && *PathHead != PATH_NAME_SEPARATOR) {
     PathHead--;
-    FileNameLength++;
   }
   PathHead++; // Exclude backslash
 
-  FileName = AllocateZeroPool (sizeof (CHAR16) * (FileNameLength + 1));
-  if (FileName == NULL) {
-    return L"\0";
-  }
-  StrnCatS (FileName, FileNameLength + 1, PathHead, FileNameLength);
-
-  return FileName;
+  return PathHead;
 }
 
 /**
@@ -112,8 +102,8 @@ P9OpenEx (
   NewIFile->Volume     = Volume;
   NewIFile->Flags      = O_RDONLY; // Currently supports read only.
   NewIFile->IsOpened   = FALSE;
-  NewIFile->FileName   = GetFileNameFromPath (FileName);
   NewIFile->SymLinkTarget = AllocateZeroPool (sizeof (CHAR16) * (P9_MAX_PATH + 1));
+  StrCpyS (NewIFile->FileName, P9_MAX_FLEN + 1, GetFileNameFromPath (FileName));
   CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
 
   DEBUG ((DEBUG_INFO, "%a:%d: FileName: %s\n", __func__, __LINE__, FileName));

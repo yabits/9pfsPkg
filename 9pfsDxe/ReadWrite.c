@@ -230,7 +230,7 @@ P9DirRead (
   NewIFile->Volume     = Volume;
   NewIFile->Flags      = O_RDONLY; // Currently supports read only.
   NewIFile->IsOpened   = FALSE;
-  NewIFile->FileName   = Path;
+  StrCpyS (NewIFile->FileName, P9_MAX_FLEN + 1, Path);
   CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
 
   Status = P9Walk (Volume, IFile, NewIFile, Path);

@@ -16,6 +16,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define P9_NOTAG    (UINT16)(~0)
 #define P9_NOFID    (UINT32)(~0)
 #define P9_MAX_PATH (UINT16)(4096)
+#define P9_MAX_FLEN (UINT16)(255)
 
 #define QID_SIZE    (UINTN)(13)
 

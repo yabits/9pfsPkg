@@ -56,7 +56,7 @@ typedef struct {
   EFI_FILE_PROTOCOL               Handle;
   EFI_FILE_INFO                   *FileInfo;
   P9_VOLUME                       *Volume;
-  CHAR16                          *FileName;
+  CHAR16                          FileName[P9_MAX_FLEN + 1];
   UINT32                          Fid;
   UINT32                          Flags;
   Qid                             Qid;

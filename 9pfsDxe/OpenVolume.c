@@ -113,7 +113,7 @@ P9OpenVolume (
   IFile->Signature  = P9_IFILE_SIGNATURE;
   IFile->Volume     = Volume;
   IFile->Fid        = GetFid ();
-  IFile->FileName   = L"";
+  StrCpyS (IFile->FileName, P9_MAX_FLEN + 1, L"");
   CopyMem (&IFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
 
   Status = P9Attach (Volume, IFile->Fid, P9_NOFID, AsciiUNameStr, AsciiANameStr, IFile);
