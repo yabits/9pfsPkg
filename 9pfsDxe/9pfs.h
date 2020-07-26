@@ -49,9 +49,11 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 //
 #define PATH_NAME_SEPARATOR     L'\\'
 
-typedef struct _P9_VOLUME P9_VOLUME;
+typedef struct _P9_IFILE    P9_IFILE;
+typedef struct _P9_SERVICE  P9_SERVICE;
+typedef struct _P9_VOLUME   P9_VOLUME;
 
-typedef struct {
+struct _P9_IFILE {
   UINTN                           Signature;
   EFI_FILE_PROTOCOL               Handle;
   EFI_FILE_INFO                   *FileInfo;
@@ -64,9 +66,9 @@ typedef struct {
   UINT64                          Position;
   CHAR16                          *SymLinkTarget;
   BOOLEAN                         IsOpened;
-} P9_IFILE;
+};
 
-typedef struct {
+struct _P9_SERVICE {
   UINTN                           Signature;
   EFI_SERVICE_BINDING_PROTOCOL    ServiceBinding;
   EFI_HANDLE                      Ip4DriverBindingHandle;
@@ -74,7 +76,7 @@ typedef struct {
   EFI_HANDLE                      Tcp4ChildHandle;
   LIST_ENTRY                      ChildrenList;
   UINTN                           ChildrenNumber;
-} P9_SERVICE;
+};
 
 struct _P9_VOLUME {
   UINTN                           Signature;
