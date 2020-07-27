@@ -78,20 +78,6 @@ P9OpenEx (
   IFile = IFILE_FROM_FHAND (FHand);
   Volume = IFile->Volume;
 
-  // Root is already opened.
-  if (StrCmp (FileName, L"\\") == 0) {
-    NewIFile = Volume->Root;
-    *NewHandle = &NewIFile->Handle;
-    return EFI_SUCCESS;
-  }
-
-  // Current is aleady opened.
-  if (StrCmp (FileName, L".") == 0) {
-    NewIFile = IFile;
-    *NewHandle = &NewIFile->Handle;
-    return EFI_SUCCESS;
-  }
-
   NewIFile = AllocateZeroPool (sizeof (P9_IFILE));
   if (NewIFile == NULL) {
     Status = EFI_OUT_OF_RESOURCES;

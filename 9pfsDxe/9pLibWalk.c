@@ -37,17 +37,16 @@ DoP9Walk (
 {
   EFI_STATUS                    Status;
   UINTN                         PathSize;
+  UINT16                        NWName;
   P9TWalk                       *TxWalk;
   UINTN                         TxWalkSize;
   P9RWalk                       *RxWalk;
   UINTN                         RxWalkSize;
 
-  if (Path == NULL) {
-    PathSize = 0;
-  } else {
-    PathSize = StrLen (Path);
-  }
-  TxWalkSize = sizeof (P9TWalk) + sizeof (P9String) * 1 + sizeof (CHAR8) * PathSize;
+  PathSize = (Path == NULL) ? 0 : StrLen (Path);
+  NWName = (PathSize == 0) ? 0 : 1;
+
+  TxWalkSize = sizeof (P9TWalk) + sizeof (P9String) * NWName + sizeof (CHAR8) * PathSize;
 
   TxWalk = AllocateZeroPool (TxWalkSize);
   if (TxWalk == NULL) {
@@ -60,10 +59,12 @@ DoP9Walk (
   TxWalk->Header.Tag    = Volume->Tag;
   TxWalk->Fid           = Fid;
   TxWalk->NewFid        = NewFid;
-  TxWalk->NWName        = 1;
-  UnicodeStrToP9StringS (Path, &TxWalk->WName[0], PathSize);
+  TxWalk->NWName        = NWName;
+  if (NWName != 0) {
+    UnicodeStrToP9StringS (Path, &TxWalk->WName[0], PathSize);
+  }
 
-  RxWalkSize = sizeof (P9RWalk) + sizeof (Qid) * 1;
+  RxWalkSize = sizeof (P9RWalk) + sizeof (Qid) * NWName;
   RxWalk = AllocateZeroPool (RxWalkSize);
   if (RxWalk == NULL) {
     Status = EFI_OUT_OF_RESOURCES;
@@ -86,7 +87,9 @@ DoP9Walk (
     goto Exit;
   }
 
-  CopyMem (NewQid, &RxWalk->WQid[0], QID_SIZE);
+  if (NWName != 0) {
+    CopyMem (NewQid, &RxWalk->WQid[0], QID_SIZE);
+  }
 
 Exit:
   if (TxWalk != NULL) {
@@ -119,6 +122,32 @@ P9Walk (
   PathLen = StrLen (Path);
   if (PathLen == 0) {
     return EFI_INVALID_PARAMETER;
+  }
+
+  // Root directory.
+  if (StrCmp (Path, L"\\") == 0) {
+    NewFid = GetFid ();
+    ZeroMem (&NewQid, QID_SIZE);
+    Status = DoP9Walk (Volume, Volume->Root->Fid, NewFid, NULL, &NewQid);
+    if (EFI_ERROR (Status)) {
+      goto Exit;
+    }
+    NewIFile->Fid = NewFid;
+    CopyMem (&NewIFile->Qid, &NewQid, QID_SIZE);
+    return EFI_SUCCESS;
+  }
+
+  // Current directory.
+  if (StrCmp (Path, L".") == 0) {
+    NewFid = GetFid ();
+    ZeroMem (&NewQid, QID_SIZE);
+    Status = DoP9Walk (Volume, IFile->Fid, NewFid, NULL, &NewQid);
+    if (EFI_ERROR (Status)) {
+      goto Exit;
+    }
+    NewIFile->Fid = NewFid;
+    CopyMem (&NewIFile->Qid, &NewQid, QID_SIZE);
+    return EFI_SUCCESS;
   }
 
   if (Path[0] == PATH_NAME_SEPARATOR) {
