@@ -421,6 +421,7 @@ P9OpenVolume (
 // Global Variables
 //
 extern EFI_GUID                       g9pfsGuid;
+extern EFI_GUID                       g9pServiceBindingProtocolGuid;
 extern EFI_DRIVER_BINDING_PROTOCOL    g9pfsDriverBinding;
 extern EFI_COMPONENT_NAME_PROTOCOL    g9pfsComponentName;
 extern EFI_COMPONENT_NAME2_PROTOCOL   g9pfsComponentName2;
