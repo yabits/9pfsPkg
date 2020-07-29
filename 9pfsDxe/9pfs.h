@@ -64,7 +64,7 @@ struct _P9_IFILE {
   Qid                             Qid;
   UINT32                          IoUnit;
   UINT64                          Position;
-  CHAR16                          *SymLinkTarget;
+  CHAR16                          SymLinkTarget[P9_MAX_PATH + 1];
   BOOLEAN                         IsOpened;
 };
 

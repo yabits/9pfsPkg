@@ -88,7 +88,6 @@ P9OpenEx (
   NewIFile->Volume     = Volume;
   NewIFile->Flags      = O_RDONLY; // Currently supports read only.
   NewIFile->IsOpened   = FALSE;
-  NewIFile->SymLinkTarget = AllocateZeroPool (sizeof (CHAR16) * (P9_MAX_PATH + 1));
   StrCpyS (NewIFile->FileName, P9_MAX_FLEN + 1, GetFileNameFromPath (FileName));
   CopyMem (&NewIFile->Handle, &P9FileInterface, sizeof (EFI_FILE_PROTOCOL));
 
