@@ -27,5 +27,5 @@ P9Delete (
   )
 {
   DEBUG ((DEBUG_INFO, "%a:%d\n", __func__, __LINE__));
-  return EFI_SUCCESS;
+  return EFI_UNSUPPORTED;
 }
