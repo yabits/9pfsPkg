@@ -1,5 +1,7 @@
 # 9pfsPkg
 
+![.github/workflows/config.yml](https://github.com/yabits/9pfsPkg/workflows/.github/workflows/config.yml/badge.svg)
+
 9pfsPkg is a Plan 9 file system protocol (9P) client for UEFI. In contrast to other network boots, it provides `EFI_SIMPLE_FILE_SYSTEM_PROTOCOL` interfaces for network-transparent file system operations. Any existing non-network-aware UEFI applications including bootloaders and Linux can use for 9P Boot without any modification.
 
 ![9P Boot Overview](https://retrage.github.io/img/9pfspkg-9p-boot-overview.png)

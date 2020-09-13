@@ -1,0 +1,80 @@
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: edk2
+    env:
+      tool_chain_tag: 'GCC5'
+      build_pkgs: '9pfsPkg'
+      build_targets: 'DEBUG,RELEASE,NO-TARGET'
+      build_archs: 'IA32,X64,ARM,AARCH64,RISCV64'
+    steps:
+    - name: Checkout EDK2
+      uses: actions/checkout@v2
+      with:
+        repository: yabits/edk2
+        ref: 9pfsPkg-CI
+        path: edk2
+    - name: Checkout 9pfsPkg
+      uses: actions/checkout@v2
+      with:
+        path: edk2/9pfsPkg
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+        architecture: 'x64'
+    - name: Install/Upgrade pip modules
+      run: pip install -r pip-requirements.txt --upgrade
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '10'
+    - name: Install cspell npm
+      run: npm install -g cspell
+    - name: Setup 9pfsPkg test environment
+      run: stuart_setup -c .pytool/CISettings.py -p $build_pkgs -t $build_targets -a $build_archs TOOL_CHAIN_TAG=$tool_chain_tag
+    - name: Update 9pfsPkg test environment
+      run: stuart_update -c .pytool/CISettings.py -p $build_pkgs -t $build_targets -a $build_archs TOOL_CHAIN_TAG=$tool_chain_tag
+    - name: Update apt
+      run: sudo apt-get update
+    - name: Install required tools
+      run: sudo apt-get install gcc g++ make uuid-dev
+      if: ${{ contains(env.tool_chain_tag, 'GCC') }}
+    - name: Build Base Tools from source
+      run: python BaseTools/Edk2ToolsBuild.py -t $tool_chain_tag
+    - name: Copy base tools build log
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: buildlog
+        path: |
+          edk2/BaseTools/BaseToolsBuild/BASETOOLS_BUILD.md
+          edk2/BaseTools/BaseToolsBuild/BASETOOLS_BUILD.txt
+    - name: Build and Test 9pfsPkg
+      run: stuart_ci_build -c .pytool/CISettings.py -p $build_pkgs -t $build_targets -a $build_archs TOOL_CHAIN_TAG=$tool_chain_tag
+    - name: Copy build logs
+      uses: actions/upload-artifact@v2
+      if: ${{ always() }}
+      with:
+        name: buildlog
+        path: |
+          edk2/Build/BUILDLOG_*.txt
+          edk2/Build/BUILDLOG_*.md
+          edk2/Build/CI_*.txt
+          edk2/Build/CI_*.md
+          edk2/Build/CISETUP.txt
+          edk2/Build/SETUPLOG.txt
+          edk2/Build/UPDATE_LOG.txt
+          edk2/Build/PREVALLOG.txt
+          edk2/Build/TestSuites.xml
+          edk2/Build/**/BUILD_TOOLS_REPORT.html
+          edk2/Build/**/OVERRIDELOG.TXT
+    - name: Publish junit test results
+      uses: EnricoMi/publish-unit-test-result-action@v1.1
+      if: ${{ always() }}
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        files: edk2/Build/TestSuites.xml
+        log_level: DEBUG
