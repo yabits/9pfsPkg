@@ -1,3 +1,11 @@
+## @file
+# GitHub Actions build file for 9pfsPkg build
+#
+# Copyright (c) Microsoft Corporation.
+# Copyright (c) 2020, Akira Moroo. All rights reserved.
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
 on: [push, pull_request]
 
 jobs:
