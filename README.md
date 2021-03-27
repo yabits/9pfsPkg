@@ -30,8 +30,8 @@ $ git clone https://github.com/yabits/9pfsPkg.git
 $ make -C BaseTools
 $ source ./edksetup.sh
 
-# Build 9pfsPkg.
-$ build -p 9pfsPkg/9pfsPkg.dsc
+# Build 9pfsPkg. Replace the target architecture and toolchain as you like.
+$ build -p 9pfsPkg/9pfsPkg.dsc -a X64 -b RELEASE -t GCC5
 ```
 
 ## Usage
