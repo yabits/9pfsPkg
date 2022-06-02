@@ -80,9 +80,8 @@ jobs:
           edk2/Build/**/BUILD_TOOLS_REPORT.html
           edk2/Build/**/OVERRIDELOG.TXT
     - name: Publish junit test results
-      uses: EnricoMi/publish-unit-test-result-action@v1.10
+      uses: EnricoMi/publish-unit-test-result-action@v1.36
       if: ${{ always() }}
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: edk2/Build/TestSuites.xml
-        log_level: DEBUG
